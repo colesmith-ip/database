@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getOrganization } from '../../actions/organizations'
 import { OrganizationForm } from '../../components/organizations/OrganizationForm'
 import { DeleteOrganizationButton } from '../../components/organizations/DeleteOrganizationButton'
+import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
@@ -12,11 +13,19 @@ export async function generateStaticParams() {
   return []
 }
 
+// Force dynamic metadata
+export async function generateMetadata() {
+  return {
+    title: 'Organization Details',
+  }
+}
+
 export default async function OrganizationDetailPage({
   params
 }: {
   params: { id: string }
 }) {
+  noStore()
   const organization = await getOrganization(params.id)
 
   if (!organization) {
