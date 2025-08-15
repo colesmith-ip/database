@@ -1,5 +1,8 @@
 import Link from 'next/link'
 
+// Force dynamic rendering to prevent build-time issues
+export const dynamic = 'force-dynamic'
+
 export default function SettingsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
