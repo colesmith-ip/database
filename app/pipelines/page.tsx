@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { getPipelines } from '../actions/pipelines'
 import { CreatePipelineForm } from '../components/pipelines/CreatePipelineForm'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function PipelinesPage() {
   const pipelines = await getPipelines()
 

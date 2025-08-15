@@ -3,6 +3,9 @@ import AnnouncementsSection from './components/homepage/AnnouncementsSection'
 import EventsSection from './components/homepage/EventsSection'
 import { getAnnouncements, getEvents } from './actions/homepage'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const [announcements, events] = await Promise.all([
     getAnnouncements(),

@@ -4,6 +4,9 @@ import { OrganizationSearchAndFilters } from '../components/organizations/Organi
 import { OrganizationsTable } from '../components/organizations/OrganizationsTable'
 import { Pagination } from '../components/ui/Pagination'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 type SearchParams = {
   page?: string
   search?: string

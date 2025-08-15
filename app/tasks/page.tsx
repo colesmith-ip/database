@@ -7,6 +7,9 @@ import { TaskStatusButton } from '../components/tasks/TaskStatusButton'
 import { DeleteTaskButton } from '../components/tasks/DeleteTaskButton'
 import { Pagination } from '../components/ui/Pagination'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 interface TasksPageProps {
   searchParams: {
     page?: string
