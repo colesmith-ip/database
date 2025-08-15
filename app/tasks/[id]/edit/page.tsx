@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { getTask } from '../../../actions/tasks'
 import { TaskEditForm } from '../../../components/tasks/TaskEditForm'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function TaskEditPage({
   params
 }: {

@@ -3,6 +3,9 @@ import { getCustomFieldSections } from '../../actions/custom-fields'
 import { AddSectionForm } from '../../components/settings/AddSectionForm'
 import { SectionList } from '../../components/settings/SectionList'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function PeopleFieldsPage() {
   const sections = await getCustomFieldSections('person')
 
