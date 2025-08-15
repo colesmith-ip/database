@@ -4,6 +4,9 @@ import { getTask } from '../../actions/tasks'
 import { DeleteTaskButton } from '../../components/tasks/DeleteTaskButton'
 import { TaskStatusButton } from '../../components/tasks/TaskStatusButton'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function TaskDetailPage({
   params
 }: {

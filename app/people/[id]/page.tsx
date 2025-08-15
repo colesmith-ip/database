@@ -9,6 +9,9 @@ import { RelationshipsList } from '../../components/relationships/RelationshipsL
 import { AddRelationshipForm } from '../../components/relationships/AddRelationshipForm'
 import { TasksList } from '../../components/tasks/TasksList'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function PersonDetailPage({
   params
 }: {

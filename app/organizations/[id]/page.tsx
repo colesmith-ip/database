@@ -4,6 +4,9 @@ import { getOrganization } from '../../actions/organizations'
 import { OrganizationForm } from '../../components/organizations/OrganizationForm'
 import { DeleteOrganizationButton } from '../../components/organizations/DeleteOrganizationButton'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function OrganizationDetailPage({
   params
 }: {

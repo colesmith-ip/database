@@ -5,6 +5,9 @@ import { KanbanBoard } from '../../components/pipelines/KanbanBoard'
 import { StageRulesSection } from '../../components/pipelines/StageRulesSection'
 import { AddStageForm } from '../../components/pipelines/AddStageForm'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function PipelinePage({
   params
 }: {
