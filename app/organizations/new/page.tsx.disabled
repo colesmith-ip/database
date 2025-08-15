@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { OrganizationForm } from '../../components/organizations/OrganizationForm'
 import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering to prevent build-time issues
@@ -6,7 +7,6 @@ export const dynamic = 'force-dynamic'
 
 export default function NewOrganizationPage() {
   noStore()
-  
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
@@ -20,7 +20,7 @@ export default function NewOrganizationPage() {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6 max-w-2xl">
-        <p className="text-gray-600">Organization form temporarily disabled for deployment testing.</p>
+        <OrganizationForm />
       </div>
     </div>
   )

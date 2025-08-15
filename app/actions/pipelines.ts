@@ -5,10 +5,39 @@ import { prisma } from '../lib/prisma'
 import { createTaskForStageRule } from './stage-rules'
 import { PrismaClient } from '@prisma/client'
 
+// Helper function to safely execute database queries
+async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn()
+  } catch (error) {
+    console.error('Database query error:', error)
+    
+    // During build time, database connection might not be available
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
+      console.warn('Database connection not available during build, returning null')
+      return null
+    }
+    
+    // In production runtime, return null instead of throwing to prevent crashes
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('Database connection failed in production, returning null')
+      return null
+    }
+    
+    // In development, throw the error for debugging
+    throw new Error(`Failed to execute database query: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
 export async function getPipelines() {
-  return await prisma.pipeline.findMany({
-    orderBy: { createdAt: 'desc' }
+  const result = await safeDbQuery(async () => {
+    return await prisma.pipeline.findMany({
+      orderBy: { createdAt: 'desc' }
+    })
   })
+  
+  // Return empty array if database is not available
+  return result || []
 }
 
 export async function createPipeline(formData: FormData) {
