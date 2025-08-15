@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { PersonForm } from '../../components/people/PersonForm'
 
+// Force dynamic rendering to prevent build-time issues
+export const dynamic = 'force-dynamic'
+
 export default function NewPersonPage() {
   return (
     <div className="container mx-auto px-4 py-8">
