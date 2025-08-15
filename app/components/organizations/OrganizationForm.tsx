@@ -38,13 +38,14 @@ export function OrganizationForm({ organization }: OrganizationFormProps) {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Select type</option>
-          <option value="Technology">Technology</option>
-          <option value="Healthcare">Healthcare</option>
-          <option value="Consulting">Consulting</option>
-          <option value="Finance">Finance</option>
-          <option value="Education">Education</option>
-          <option value="Manufacturing">Manufacturing</option>
-          <option value="Retail">Retail</option>
+          <option value="Missions Agency">Missions Agency</option>
+          <option value="Local Church">Local Church</option>
+          <option value="Denomination">Denomination</option>
+          <option value="Ministry Partner">Ministry Partner</option>
+          <option value="Support Organization">Support Organization</option>
+          <option value="Training Institution">Training Institution</option>
+          <option value="Medical Missions">Medical Missions</option>
+          <option value="Education Ministry">Education Ministry</option>
           <option value="Other">Other</option>
         </select>
       </div>

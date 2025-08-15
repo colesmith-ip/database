@@ -48,16 +48,18 @@ export async function createAnnouncement(data: {
   authorEmail?: string
   priority: string
 }) {
-  try {
-    const announcement = await prisma.announcement.create({
+  const result = await safeDbQuery(async () => {
+    return await prisma.announcement.create({
       data
     })
-    revalidatePath('/')
-    return announcement
-  } catch (error) {
-    console.error('Error creating announcement:', error)
-    throw new Error('Failed to create announcement')
+  })
+
+  if (!result) {
+    throw new Error('Failed to create announcement: Database connection error')
   }
+
+  revalidatePath('/')
+  return result
 }
 
 export async function updateAnnouncement(id: string, data: {
@@ -119,16 +121,18 @@ export async function createEvent(data: {
   eventType: string
   color: string
 }) {
-  try {
-    const event = await prisma.event.create({
+  const result = await safeDbQuery(async () => {
+    return await prisma.event.create({
       data
     })
-    revalidatePath('/')
-    return event
-  } catch (error) {
-    console.error('Error creating event:', error)
-    throw new Error('Failed to create event')
+  })
+
+  if (!result) {
+    throw new Error('Failed to create event: Database connection error')
   }
+
+  revalidatePath('/')
+  return result
 }
 
 export async function updateEvent(id: string, data: {

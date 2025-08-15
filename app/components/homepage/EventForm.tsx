@@ -139,10 +139,13 @@ export default function EventForm({ event, onClose }: EventFormProps) {
                 onChange={(e) => setEventType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="meeting">Meeting</option>
-                <option value="training">Training</option>
-                <option value="review">Review</option>
-                <option value="other">Other</option>
+                <option value="Prayer">Prayer</option>
+                <option value="Training">Training</option>
+                <option value="Commissioning">Commissioning</option>
+                <option value="Support Raising">Support Raising</option>
+                <option value="Mission Trip">Mission Trip</option>
+                <option value="Meeting">Meeting</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 

@@ -146,8 +146,8 @@ export async function createPerson(formData: FormData) {
   
   const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()).filter(Boolean) : []
 
-  try {
-    await prisma.person.create({
+  const result = await safeDbQuery(async () => {
+    return await prisma.person.create({
       data: {
         name: name.trim(),
         email: email && email.trim() !== '' ? email.trim() : null,
@@ -156,13 +156,14 @@ export async function createPerson(formData: FormData) {
         tags: tags.length > 0 ? tags : undefined,
       },
     })
+  })
 
-    revalidatePath('/people')
-    redirect('/people')
-  } catch (error) {
-    console.error('Failed to create person:', error)
-    throw new Error(`Failed to create person: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  if (!result) {
+    throw new Error('Failed to create person: Database connection error')
   }
+
+  revalidatePath('/people')
+  redirect('/people')
 }
 
 export async function updatePerson(id: string, formData: FormData) {

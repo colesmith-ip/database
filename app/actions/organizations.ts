@@ -124,21 +124,22 @@ export async function createOrganization(formData: FormData) {
     throw new Error('Organization name is required')
   }
 
-  try {
-    await prisma.organization.create({
+  const result = await safeDbQuery(async () => {
+    return await prisma.organization.create({
       data: {
         name: name.trim(),
         type: type && type.trim() !== '' ? type.trim() : null,
         region: region && region.trim() !== '' ? region.trim() : null,
       },
     })
+  })
 
-    revalidatePath('/organizations')
-    redirect('/organizations')
-  } catch (error) {
-    console.error('Failed to create organization:', error)
-    throw new Error(`Failed to create organization: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  if (!result) {
+    throw new Error('Failed to create organization: Database connection error')
   }
+
+  revalidatePath('/organizations')
+  redirect('/organizations')
 }
 
 export async function updateOrganization(id: string, formData: FormData) {

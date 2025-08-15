@@ -131,7 +131,7 @@ export async function createTask(formData: FormData) {
     throw new Error('Title is required')
   }
 
-  try {
+  const result = await safeDbQuery(async () => {
     const task = await prisma.task.create({
       data: {
         title: title.trim(),
@@ -148,7 +148,6 @@ export async function createTask(formData: FormData) {
       }
     })
 
-    revalidatePath('/tasks')
     if (personId) revalidatePath(`/people/${personId}`)
     if (pipelineItemId) {
       const item = await prisma.pipelineItem.findUnique({
@@ -159,10 +158,14 @@ export async function createTask(formData: FormData) {
     }
     
     return task
-  } catch (error) {
-    console.error('Failed to create task:', error)
-    throw new Error(`Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  })
+
+  if (!result) {
+    throw new Error('Failed to create task: Database connection error')
   }
+
+  revalidatePath('/tasks')
+  return result
 }
 
 export async function updateTask(id: string, formData: FormData) {

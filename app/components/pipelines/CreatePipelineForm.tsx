@@ -6,7 +6,7 @@ import { createPipeline } from '../../actions/pipelines'
 export function CreatePipelineForm() {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [stageNames, setStageNames] = useState(['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed'])
+  const [stageNames, setStageNames] = useState(['Initial Contact', 'Application Process', 'Training & Preparation', 'Support Raising', 'Field Deployment'])
 
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true)
@@ -18,7 +18,7 @@ export function CreatePipelineForm() {
 
       await createPipeline(formData)
       setIsOpen(false)
-      setStageNames(['Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed']) // Reset to default
+      setStageNames(['Initial Contact', 'Application Process', 'Training & Preparation', 'Support Raising', 'Field Deployment']) // Reset to default
     } catch (error) {
       console.error('Failed to create pipeline:', error)
       alert(error instanceof Error ? error.message : 'Failed to create pipeline')
@@ -78,7 +78,7 @@ export function CreatePipelineForm() {
               name="name"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., Sales Pipeline, Recruitment Pipeline"
+              placeholder="e.g., Missionary Support Pipeline, Short-term Missions Pipeline"
             />
           </div>
 

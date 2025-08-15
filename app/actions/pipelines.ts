@@ -52,9 +52,9 @@ export async function createPipeline(formData: FormData) {
     throw new Error('At least one stage is required')
   }
 
-  try {
+  const result = await safeDbQuery(async () => {
     // @ts-ignore - Prisma transaction typing issue
-    const result = await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx) => {
       // Create the pipeline
       const pipeline = await tx.pipeline.create({
         data: {
@@ -77,13 +77,14 @@ export async function createPipeline(formData: FormData) {
 
       return { pipeline, stages }
     })
+  })
 
-    revalidatePath('/pipelines')
-    return result
-  } catch (error) {
-    console.error('Failed to create pipeline:', error)
-    throw new Error(`Failed to create pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  if (!result) {
+    throw new Error('Failed to create pipeline: Database connection error')
   }
+
+  revalidatePath('/pipelines')
+  return result
 }
 
 export async function addStage(pipelineId: string, formData: FormData) {

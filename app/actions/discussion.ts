@@ -75,20 +75,22 @@ export async function getPosts(): Promise<PostWithDetails[]> {
 }
 
 export async function createPost(content: string, authorName: string, authorEmail?: string) {
-  try {
-    const post = await prisma.post.create({
+  const result = await safeDbQuery(async () => {
+    return await prisma.post.create({
       data: {
         content,
         authorName,
         authorEmail
       }
     })
-    revalidatePath('/')
-    return post
-  } catch (error) {
-    console.error('Error creating post:', error)
-    throw new Error('Failed to create post')
+  })
+
+  if (!result) {
+    throw new Error('Failed to create post: Database connection error')
   }
+
+  revalidatePath('/')
+  return result
 }
 
 export async function createComment(postId: string, content: string, authorName: string, authorEmail?: string) {
