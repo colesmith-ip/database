@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { getPipelinesForReports, getPipelineVelocityReport } from '../actions/reports'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 function formatHours(hours: number | null): string {
   if (hours === null || hours === undefined) {
     return 'N/A'

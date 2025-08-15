@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPipelineReport } from '../../../actions/reports'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 function formatHours(hours: number): string {
   if (hours < 1) {
     return '<1h'
