@@ -67,7 +67,11 @@ export function CreatePipelineForm() {
           </button>
         </div>
 
-        <form action={handleSubmit} className="space-y-6">
+        <form onSubmit={async (e) => {
+          e.preventDefault()
+          const formData = new FormData(e.currentTarget)
+          await handleSubmit(formData)
+        }} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Pipeline Name *

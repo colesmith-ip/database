@@ -55,7 +55,11 @@ export function TaskForm({ initialData, onSuccess }: TaskFormProps) {
           </button>
         </div>
 
-        <form action={handleSubmit} className="space-y-4">
+        <form onSubmit={async (e) => {
+          e.preventDefault()
+          const formData = new FormData(e.currentTarget)
+          await handleSubmit(formData)
+        }} className="space-y-4">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
               Title *
