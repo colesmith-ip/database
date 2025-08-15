@@ -9,21 +9,12 @@ export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   noStore()
-  
-  console.log('Homepage: Starting database calls...')
-  
-  try {
-    const [announcements, events] = await Promise.all([
-      getAnnouncements(),
-      getEvents()
-    ])
-    
-    console.log('Homepage: Database calls successful', { 
-      announcementsCount: announcements.length, 
-      eventsCount: events.length 
-    })
-    
-    return (
+  const [announcements, events] = await Promise.all([
+    getAnnouncements(),
+    getEvents()
+  ])
+
+  return (
       <main className="min-h-screen bg-gray-50">
         {/* Title Section */}
         <div className="bg-white shadow-sm border-b">
@@ -91,25 +82,7 @@ export default async function Home() {
               </div>
             </div>
           </div>
-        </div>
-      </main>
-    )
-  } catch (error) {
-    console.error('Homepage: Error occurred', error)
-    return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h1 className="text-2xl font-bold text-red-800 mb-4">Error Loading Page</h1>
-            <p className="text-red-700">
-              There was an error loading the homepage. Please try refreshing the page.
-            </p>
-            <pre className="mt-4 text-sm text-red-600 bg-red-100 p-4 rounded overflow-auto">
-              {error instanceof Error ? error.message : 'Unknown error'}
-            </pre>
-          </div>
-        </div>
-      </main>
-    )
-  }
+              </div>
+    </main>
+  )
 }
