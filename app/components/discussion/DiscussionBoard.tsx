@@ -2,6 +2,9 @@ import { getPosts } from '../../actions/discussion'
 import CreatePostForm from './CreatePostForm'
 import PostCard from './PostCard'
 
+// Force dynamic rendering to prevent build-time database calls
+export const dynamic = 'force-dynamic'
+
 export default async function DiscussionBoard() {
   const posts = await getPosts()
 
