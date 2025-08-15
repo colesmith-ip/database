@@ -60,3 +60,4 @@ export function EditStageNameForm({ stageId, currentName, onCancel }: EditStageN
     </form>
   )
 }
+

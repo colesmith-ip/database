@@ -130,3 +130,4 @@ export function PeopleTable({ people }: PeopleTableProps) {
     </div>
   )
 }
+

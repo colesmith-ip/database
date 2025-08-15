@@ -180,3 +180,4 @@ export function StageRuleForm({ stageId, stageName, pipelineId }: StageRuleFormP
     </div>
   )
 }
+

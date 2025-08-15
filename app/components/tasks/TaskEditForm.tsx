@@ -7,7 +7,7 @@ import { Task } from '@prisma/client'
 import Link from 'next/link'
 
 type TaskWithRelations = Task & {
-  person?: { id: string; name: string; email: string } | null
+  person?: { id: string; name: string; email: string | null } | null
   pipelineItem?: { id: string; title: string } | null
 }
 

@@ -47,3 +47,4 @@ seedStageHistory().catch((error) => {
   console.error('❌ Error seeding stage history:', error)
   process.exit(1)
 })
+

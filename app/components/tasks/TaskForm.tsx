@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createTask } from '../../actions/tasks'
-import { getAllPeople } from '../../actions/people'
+import { getPeople } from '../../actions/people'
 import { getPipelines } from '../../actions/pipelines'
 
 interface TaskFormProps {

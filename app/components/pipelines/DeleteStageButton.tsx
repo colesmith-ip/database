@@ -52,3 +52,4 @@ export function DeleteStageButton({ stageId, stageName, itemCount }: DeleteStage
     </button>
   )
 }
+

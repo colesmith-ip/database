@@ -129,7 +129,7 @@ export default async function PersonDetailPage({
                         key={index}
                         className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
                       >
-                        {tag}
+                        {String(tag)}
                       </span>
                     ))}
                   </div>

@@ -52,7 +52,7 @@ export async function getAvailableFields(entityType: 'person' | 'organization') 
 
   return {
     baseFields,
-    customFields: customFields.map(field => ({
+    customFields: customFields.map((field: any) => ({
       id: field.id,
       name: field.name,
       label: field.label,
@@ -175,9 +175,16 @@ export async function detectDuplicates(
     }
 
     if (Object.keys(whereClause).length > 0) {
-      const existing = await prisma[entityType].findFirst({
-        where: whereClause
-      })
+      let existing: any = null
+      if (entityType === 'person') {
+        existing = await prisma.person.findFirst({
+          where: whereClause
+        })
+      } else if (entityType === 'organization') {
+        existing = await prisma.organization.findFirst({
+          where: whereClause
+        })
+      }
 
       if (existing) {
         const conflicts = findConflicts(existing, newRecord, duplicateFields)
@@ -239,7 +246,7 @@ export async function importData(
     imported: 0,
     skipped: 0,
     updated: 0,
-    errors: []
+    errors: [] as Array<{ record: any; error: string }>
   }
 
   for (const record of data) {
@@ -284,24 +291,44 @@ export async function importData(
 
       if (duplicate && duplicateHandling === 'update') {
         // Update existing record
-        await prisma[entityType].update({
-          where: { id: duplicate.existingId },
-          data: mappedData
-        })
+        if (entityType === 'person') {
+          await prisma.person.update({
+            where: { id: duplicate.existingId },
+            data: mappedData
+          })
+        } else if (entityType === 'organization') {
+          await prisma.organization.update({
+            where: { id: duplicate.existingId },
+            data: mappedData
+          })
+        }
         results.updated++
       } else if (duplicate && duplicateHandling === 'merge') {
         // Merge data (keep existing for conflicts, add new data)
         const mergedData = { ...duplicate.existingData, ...mappedData }
-        await prisma[entityType].update({
-          where: { id: duplicate.existingId },
-          data: mergedData
-        })
+        if (entityType === 'person') {
+          await prisma.person.update({
+            where: { id: duplicate.existingId },
+            data: mergedData
+          })
+        } else if (entityType === 'organization') {
+          await prisma.organization.update({
+            where: { id: duplicate.existingId },
+            data: mergedData
+          })
+        }
         results.updated++
       } else {
         // Create new record
-        await prisma[entityType].create({
-          data: mappedData
-        })
+        if (entityType === 'person') {
+          await prisma.person.create({
+            data: mappedData
+          })
+        } else if (entityType === 'organization') {
+          await prisma.organization.create({
+            data: mappedData
+          })
+        }
         results.imported++
       }
     } catch (error) {
@@ -322,12 +349,12 @@ export async function getImportPreview(fileData: any, entityType: 'person' | 'or
   const availableFields = await getAvailableFields(entityType)
   
   // Suggest field mappings
-  const suggestedMappings: ImportMapping[] = headers.map(header => {
-    const baseField = availableFields.baseFields.find(field => 
+  const suggestedMappings: ImportMapping[] = headers.map((header: string) => {
+    const baseField = availableFields.baseFields.find((field: string) => 
       field.toLowerCase() === header.toLowerCase()
     )
 
-    const customField = availableFields.customFields.find(field =>
+    const customField = availableFields.customFields.find((field: any) =>
       field.label.toLowerCase() === header.toLowerCase()
     )
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '../lib/prisma'
 import { createTaskForStageRule } from './stage-rules'
+import { PrismaClient } from '@prisma/client'
 
 export async function getPipelines() {
   return await prisma.pipeline.findMany({
@@ -23,6 +24,7 @@ export async function createPipeline(formData: FormData) {
   }
 
   try {
+    // @ts-ignore - Prisma transaction typing issue
     const result = await prisma.$transaction(async (tx) => {
       // Create the pipeline
       const pipeline = await tx.pipeline.create({
@@ -64,6 +66,7 @@ export async function addStage(pipelineId: string, formData: FormData) {
   }
 
   try {
+    // @ts-ignore - Prisma transaction typing issue
     const result = await prisma.$transaction(async (tx) => {
       // Get current stages to determine order
       const currentStages = await tx.stage.findMany({
@@ -76,7 +79,7 @@ export async function addStage(pipelineId: string, formData: FormData) {
         newOrder = 0
         // Shift all existing stages up
         await Promise.all(
-          currentStages.map(stage =>
+          currentStages.map((stage: any) =>
             tx.stage.update({
               where: { id: stage.id },
               data: { order: stage.order + 1 }
@@ -94,7 +97,7 @@ export async function addStage(pipelineId: string, formData: FormData) {
         newOrder = targetIndex
         // Shift stages after this position up
         await Promise.all(
-          currentStages.slice(targetIndex).map(stage =>
+          currentStages.slice(targetIndex).map((stage: any) =>
             tx.stage.update({
               where: { id: stage.id },
               data: { order: stage.order + 1 }
@@ -126,6 +129,7 @@ export async function addStage(pipelineId: string, formData: FormData) {
 
 export async function deleteStage(stageId: string) {
   try {
+    // @ts-ignore - Prisma transaction typing issue
     const result = await prisma.$transaction(async (tx) => {
       // Get the stage to know its pipeline and order
       const stage = await tx.stage.findUnique({
@@ -158,7 +162,7 @@ export async function deleteStage(stageId: string) {
       })
 
       await Promise.all(
-        remainingStages.map((remainingStage, index) =>
+        remainingStages.map((remainingStage: any, index: number) =>
           tx.stage.update({
             where: { id: remainingStage.id },
             data: { order: index }
@@ -246,6 +250,7 @@ export async function createPipelineItem(formData: FormData) {
 
   try {
     // Use a transaction to create item and initial stage history
+    // @ts-ignore - Prisma transaction typing issue
     const result = await prisma.$transaction(async (tx) => {
       // Create the pipeline item
       const item = await tx.pipelineItem.create({
@@ -288,6 +293,7 @@ export async function createPipelineItem(formData: FormData) {
 export async function updatePipelineItemStage(itemId: string, newStageId: string) {
   try {
     // Use a transaction to ensure consistency
+    // @ts-ignore - Prisma transaction typing issue
     const result = await prisma.$transaction(async (tx) => {
       // Get the current item to know the old stage
       const currentItem = await tx.pipelineItem.findUnique({

@@ -194,3 +194,4 @@ export function TaskFiltersForm({ currentFilters, statuses }: TaskFiltersFormPro
     </div>
   )
 }
+

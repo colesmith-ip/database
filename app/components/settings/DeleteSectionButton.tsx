@@ -38,3 +38,4 @@ export function DeleteSectionButton({ sectionId, sectionName }: DeleteSectionBut
     </button>
   )
 }
+

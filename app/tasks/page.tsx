@@ -198,7 +198,6 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
             currentPage={currentPage} 
             totalPages={pages} 
             baseUrl="/tasks"
-            searchParams={searchParams}
           />
         </div>
       )}

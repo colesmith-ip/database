@@ -123,3 +123,4 @@ export function KanbanBoard({ stages, pipelineId }: KanbanBoardProps) {
     </DndContext>
   )
 }
+

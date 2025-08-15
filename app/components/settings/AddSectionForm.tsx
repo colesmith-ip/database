@@ -99,3 +99,4 @@ export function AddSectionForm({ entityType }: AddSectionFormProps) {
     </div>
   )
 }
+

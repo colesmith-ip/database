@@ -68,3 +68,4 @@ export function SectionList({ sections, entityType }: SectionListProps) {
     </div>
   )
 }
+

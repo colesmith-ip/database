@@ -73,3 +73,4 @@ psql -U postgres -d hello_crm_db
 \dt         # List tables
 \q          # Quit
 ```
+

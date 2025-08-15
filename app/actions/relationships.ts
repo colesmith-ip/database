@@ -77,6 +77,12 @@ export async function getAllPeople() {
       id: true,
       name: true,
       email: true,
+      phone: true,
+      tags: true,
+      customFields: true,
+      ownerUserId: true,
+      createdAt: true,
+      updatedAt: true,
     },
     orderBy: { name: 'asc' }
   })

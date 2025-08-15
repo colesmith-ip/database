@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Hello CRM",
+  title: "International Project",
   description: "A simple CRM built with Next.js and Prisma",
 };
 

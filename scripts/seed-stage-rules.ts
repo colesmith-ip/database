@@ -46,7 +46,7 @@ async function seedStageRules() {
         })
         console.log(`✅ Created rule for stage: "${ruleData.templateTitle}" (${ruleData.offsetDays} days)`)
       } catch (error) {
-        if (error.code === 'P2002') {
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
           console.log(`⏭️ Rule already exists for stage ${ruleData.stageId}`)
         } else {
           console.log(`❌ Failed to create rule:`, error)

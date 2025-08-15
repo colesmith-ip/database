@@ -108,3 +108,4 @@ export function StageRulesSection({ stages, pipelineId }: StageRulesSectionProps
     </div>
   )
 }
+

@@ -36,3 +36,4 @@ export function DeleteTaskButton({ taskId }: DeleteTaskButtonProps) {
     </button>
   )
 }
+

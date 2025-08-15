@@ -13,7 +13,7 @@ export interface StageAnalytics {
     title: string
     timeInStage: number // in hours
     enteredAt: Date
-    person?: { name: string; email: string } | null
+    person?: { name: string; email: string | null } | null
     organization?: { name: string } | null
   }>
 }

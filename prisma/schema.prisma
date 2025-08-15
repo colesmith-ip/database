@@ -216,3 +216,76 @@ model CustomField {
   @@unique([sectionId, name])
   @@map("custom_fields")
 }
+
+model Post {
+  id          String   @id @default(cuid())
+  content     String
+  authorName  String
+  authorEmail String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  comments Comment[]
+  likes    Like[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String
+  authorName String
+  authorEmail String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Like {
+  id          String   @id @default(cuid())
+  postId      String
+  authorEmail String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, authorEmail])
+  @@map("likes")
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  authorName  String
+  authorEmail String?
+  priority    String   @default("normal") // low, normal, high, urgent
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  eventType   String    @default("meeting") // meeting, training, review, other
+  color       String    @default("blue") // blue, green, purple, orange, red
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("events")
+}

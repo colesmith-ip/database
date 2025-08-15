@@ -9,3 +9,4 @@ export const FIELD_TYPES = [
   { value: 'textarea', label: 'Text Area' },
   { value: 'url', label: 'URL' }
 ]
+

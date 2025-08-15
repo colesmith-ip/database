@@ -26,11 +26,13 @@ export async function getPeople(
           { phone: { contains: filters.search, mode: 'insensitive' as const } },
         ]
       } : {},
-      filters.tag ? {
-        tags: {
-          array_contains: [filters.tag]
-        }
-      } : {},
+      // TODO: Fix tags filter for JSON array
+      // filters.tag ? {
+      //   tags: {
+      //     path: ['$'],
+      //     array_contains: filters.tag
+      //   }
+      // } : {},
       filters.ownerUserId ? {
         ownerUserId: filters.ownerUserId
       } : {},
@@ -109,7 +111,7 @@ export async function createPerson(formData: FormData) {
         email: email && email.trim() !== '' ? email.trim() : null,
         phone: phone && phone.trim() !== '' ? phone.trim() : null,
         ownerUserId: ownerUserId && ownerUserId.trim() !== '' ? ownerUserId.trim() : null,
-        tags: tags.length > 0 ? tags : null,
+        tags: tags.length > 0 ? tags : undefined,
       },
     })
 
@@ -138,7 +140,7 @@ export async function updatePerson(id: string, formData: FormData) {
         email: email || null,
         phone: phone || null,
         ownerUserId: ownerUserId || null,
-        tags: tags.length > 0 ? tags : null,
+        tags: tags.length > 0 ? tags : undefined,
       },
     })
 
