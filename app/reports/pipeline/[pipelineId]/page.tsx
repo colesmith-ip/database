@@ -5,6 +5,11 @@ import { getPipelineReport } from '../../../actions/reports'
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
 
+// Prevent static generation of dynamic routes
+export async function generateStaticParams() {
+  return []
+}
+
 function formatHours(hours: number): string {
   if (hours < 1) {
     return '<1h'

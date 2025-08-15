@@ -6,6 +6,11 @@ import { TaskEditForm } from '../../../components/tasks/TaskEditForm'
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
 
+// Prevent static generation of dynamic routes
+export async function generateStaticParams() {
+  return []
+}
+
 export default async function TaskEditPage({
   params
 }: {
