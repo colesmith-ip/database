@@ -3,6 +3,7 @@ import { getOrganizations } from '../actions/organizations'
 import { OrganizationSearchAndFilters } from '../components/organizations/OrganizationSearchAndFilters'
 import { OrganizationsTable } from '../components/organizations/OrganizationsTable'
 import { Pagination } from '../components/ui/Pagination'
+import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
@@ -19,6 +20,7 @@ export default async function OrganizationsPage({
 }: {
   searchParams: SearchParams
 }) {
+  noStore()
   const page = parseInt(searchParams.page || '1')
   const filters = {
     search: searchParams.search,

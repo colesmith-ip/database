@@ -3,6 +3,7 @@ import { getPeople } from '../actions/people'
 import { SearchAndFilters } from '../components/people/SearchAndFilters'
 import { PeopleTable } from '../components/people/PeopleTable'
 import { Pagination } from '../components/ui/Pagination'
+import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
@@ -19,6 +20,7 @@ export default async function PeoplePage({
 }: {
   searchParams: SearchParams
 }) {
+  noStore()
   const page = parseInt(searchParams.page || '1')
   const filters = {
     search: searchParams.search,
