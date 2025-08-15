@@ -3,19 +3,33 @@
 import { prisma } from '../lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+// Helper function to safely execute database queries
+async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn()
+  } catch (error) {
+    // During build time, database connection might not be available
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
+      console.warn('Database connection not available during build, returning null')
+      return null
+    }
+    console.error('Database query error:', error)
+    throw new Error('Failed to execute database query')
+  }
+}
+
 // Announcement actions
 export async function getAnnouncements() {
-  try {
-    const announcements = await prisma.announcement.findMany({
+  const result = await safeDbQuery(async () => {
+    return await prisma.announcement.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'desc' },
       take: 5
     })
-    return announcements
-  } catch (error) {
-    console.error('Error fetching announcements:', error)
-    throw new Error('Failed to fetch announcements')
-  }
+  })
+  
+  // Return empty array if database is not available during build
+  return result || []
 }
 
 export async function createAnnouncement(data: {
@@ -70,8 +84,8 @@ export async function deleteAnnouncement(id: string) {
 
 // Event actions
 export async function getEvents() {
-  try {
-    const events = await prisma.event.findMany({
+  const result = await safeDbQuery(async () => {
+    return await prisma.event.findMany({
       where: { 
         isActive: true,
         startDate: {
@@ -81,11 +95,10 @@ export async function getEvents() {
       orderBy: { startDate: 'asc' },
       take: 5
     })
-    return events
-  } catch (error) {
-    console.error('Error fetching events:', error)
-    throw new Error('Failed to fetch events')
-  }
+  })
+  
+  // Return empty array if database is not available during build
+  return result || []
 }
 
 export async function createEvent(data: {

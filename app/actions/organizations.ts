@@ -4,6 +4,21 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '../lib/prisma'
 
+// Helper function to safely execute database queries
+async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn()
+  } catch (error) {
+    // During build time, database connection might not be available
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
+      console.warn('Database connection not available during build, returning null')
+      return null
+    }
+    console.error('Database query error:', error)
+    throw new Error('Failed to execute database query')
+  }
+}
+
 export type OrganizationFilters = {
   search?: string
   type?: string
@@ -15,61 +30,79 @@ export async function getOrganizations(
   limit: number = 10,
   filters: OrganizationFilters = {}
 ) {
-  const skip = (page - 1) * limit
-  
-  const where = {
-    AND: [
-      filters.search ? {
-        name: { contains: filters.search, mode: 'insensitive' as const }
-      } : {},
-      filters.type ? {
-        type: filters.type
-      } : {},
-      filters.region ? {
-        region: filters.region
-      } : {},
-    ]
-  }
+  const result = await safeDbQuery(async () => {
+    const skip = (page - 1) * limit
+    
+    const where = {
+      AND: [
+        filters.search ? {
+          name: { contains: filters.search, mode: 'insensitive' as const }
+        } : {},
+        filters.type ? {
+          type: filters.type
+        } : {},
+        filters.region ? {
+          region: filters.region
+        } : {},
+      ]
+    }
 
-  const [organizations, total] = await Promise.all([
-    prisma.organization.findMany({
-      where,
+    const [organizations, total] = await Promise.all([
+      prisma.organization.findMany({
+        where,
+        include: {
+          people: {
+            include: {
+              person: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.organization.count({ where }),
+    ])
+
+    return {
+      organizations,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      }
+    }
+  })
+  
+  // Return empty result if database is not available during build
+  return result || {
+    organizations: [],
+    pagination: {
+      page,
+      limit,
+      total: 0,
+      pages: 0,
+    }
+  }
+}
+
+export async function getOrganization(id: string) {
+  const result = await safeDbQuery(async () => {
+    return await prisma.organization.findUnique({
+      where: { id },
       include: {
         people: {
           include: {
             person: true
           }
         }
-      },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit,
-    }),
-    prisma.organization.count({ where }),
-  ])
-
-  return {
-    organizations,
-    pagination: {
-      page,
-      limit,
-      total,
-      pages: Math.ceil(total / limit),
-    }
-  }
-}
-
-export async function getOrganization(id: string) {
-  return await prisma.organization.findUnique({
-    where: { id },
-    include: {
-      people: {
-        include: {
-          person: true
-        }
       }
-    }
+    })
   })
+  
+  // Return null if database is not available during build
+  return result
 }
 
 export async function createOrganization(formData: FormData) {

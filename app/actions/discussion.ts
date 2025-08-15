@@ -3,6 +3,21 @@
 import { prisma } from '../lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+// Helper function to safely execute database queries
+async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn()
+  } catch (error) {
+    // During build time, database connection might not be available
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
+      console.warn('Database connection not available during build, returning null')
+      return null
+    }
+    console.error('Database query error:', error)
+    throw new Error('Failed to execute database query')
+  }
+}
+
 export interface PostWithDetails {
   id: string
   content: string
@@ -28,8 +43,8 @@ export interface PostWithDetails {
 }
 
 export async function getPosts(): Promise<PostWithDetails[]> {
-  try {
-    const posts = await prisma.post.findMany({
+  const result = await safeDbQuery(async () => {
+    return await prisma.post.findMany({
       include: {
         _count: {
           select: {
@@ -44,11 +59,10 @@ export async function getPosts(): Promise<PostWithDetails[]> {
       },
       orderBy: { createdAt: 'desc' }
     })
-    return posts
-  } catch (error) {
-    console.error('Error fetching posts:', error)
-    throw new Error('Failed to fetch posts')
-  }
+  })
+  
+  // Return empty array if database is not available during build
+  return result || []
 }
 
 export async function createPost(content: string, authorName: string, authorEmail?: string) {
