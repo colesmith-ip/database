@@ -3,6 +3,30 @@
 import { prisma } from '../lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+// Helper function to safely execute database queries
+async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn()
+  } catch (error) {
+    console.error('Database query error:', error)
+    
+    // During build time, database connection might not be available
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
+      console.warn('Database connection not available during build, returning null')
+      return null
+    }
+    
+    // In production runtime, return null instead of throwing to prevent crashes
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('Database connection failed in production, returning null')
+      return null
+    }
+    
+    // In development, throw the error for debugging
+    throw new Error(`Failed to execute database query: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
 export interface TaskFilters {
   ownerUserId?: string
   status?: string
@@ -13,70 +37,85 @@ export interface TaskFilters {
 }
 
 export async function getTasks(filters: TaskFilters = {}, page = 1, limit = 20) {
-  const skip = (page - 1) * limit
-  
-  const where: any = {}
-  
-  if (filters.ownerUserId) {
-    where.ownerUserId = filters.ownerUserId
-  }
-  
-  if (filters.status) {
-    where.status = filters.status
-  }
-  
-  if (filters.personId) {
-    where.personId = filters.personId
-  }
-  
-  if (filters.pipelineItemId) {
-    where.pipelineItemId = filters.pipelineItemId
-  }
-  
-  if (filters.dueBefore || filters.dueAfter) {
-    where.dueAt = {}
-    if (filters.dueBefore) {
-      where.dueAt.lte = filters.dueBefore
+  const result = await safeDbQuery(async () => {
+    const skip = (page - 1) * limit
+    
+    const where: any = {}
+    
+    if (filters.ownerUserId) {
+      where.ownerUserId = filters.ownerUserId
     }
-    if (filters.dueAfter) {
-      where.dueAt.gte = filters.dueAfter
+    
+    if (filters.status) {
+      where.status = filters.status
     }
-  }
+    
+    if (filters.personId) {
+      where.personId = filters.personId
+    }
+    
+    if (filters.pipelineItemId) {
+      where.pipelineItemId = filters.pipelineItemId
+    }
+    
+    if (filters.dueBefore || filters.dueAfter) {
+      where.dueAt = {}
+      if (filters.dueBefore) {
+        where.dueAt.lte = filters.dueBefore
+      }
+      if (filters.dueAfter) {
+        where.dueAt.gte = filters.dueAfter
+      }
+    }
 
-  const [tasks, total] = await Promise.all([
-    prisma.task.findMany({
-      where,
-      include: {
-        person: { select: { id: true, name: true, email: true } },
-        pipelineItem: { select: { id: true, title: true } }
-      },
-      orderBy: [
-        { status: 'asc' },
-        { dueAt: 'asc' },
-        { createdAt: 'desc' }
-      ],
-      skip,
-      take: limit
-    }),
-    prisma.task.count({ where })
-  ])
+    const [tasks, total] = await Promise.all([
+      prisma.task.findMany({
+        where,
+        include: {
+          person: { select: { id: true, name: true, email: true } },
+          pipelineItem: { select: { id: true, title: true } }
+        },
+        orderBy: [
+          { status: 'asc' },
+          { dueAt: 'asc' },
+          { createdAt: 'desc' }
+        ],
+        skip,
+        take: limit
+      }),
+      prisma.task.count({ where })
+    ])
 
-  return {
-    tasks,
-    total,
-    pages: Math.ceil(total / limit),
+    return {
+      tasks,
+      total,
+      pages: Math.ceil(total / limit),
+      currentPage: page
+    }
+  })
+  
+  // Return empty result if database is not available
+  return result || {
+    tasks: [],
+    total: 0,
+    pages: 0,
     currentPage: page
   }
 }
 
 export async function getTask(id: string) {
-  return await prisma.task.findUnique({
-    where: { id },
-    include: {
-      person: { select: { id: true, name: true, email: true } },
-      pipelineItem: { select: { id: true, title: true } }
-    }
+  const result = await safeDbQuery(async () => {
+    return await prisma.task.findUnique({
+      where: { id },
+      include: {
+        person: { select: { id: true, name: true, email: true } },
+        pipelineItem: { select: { id: true, title: true } }
+      }
+    })
   })
+  
+  // Return null if database is not available
+  return result
 }
 
 export async function createTask(formData: FormData) {

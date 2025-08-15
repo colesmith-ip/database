@@ -2,6 +2,30 @@
 
 import { prisma } from '../lib/prisma'
 
+// Helper function to safely execute database queries
+async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn()
+  } catch (error) {
+    console.error('Database query error:', error)
+    
+    // During build time, database connection might not be available
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
+      console.warn('Database connection not available during build, returning null')
+      return null
+    }
+    
+    // In production runtime, return null instead of throwing to prevent crashes
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('Database connection failed in production, returning null')
+      return null
+    }
+    
+    // In development, throw the error for debugging
+    throw new Error(`Failed to execute database query: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
 export interface StageAnalytics {
   stageId: string
   stageName: string
@@ -28,20 +52,25 @@ export interface PipelineReport {
 }
 
 export async function getPipelinesForReports() {
-  return await prisma.pipeline.findMany({
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-      _count: {
-        select: {
-          stages: true
+  const result = await safeDbQuery(async () => {
+    return await prisma.pipeline.findMany({
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            stages: true
+          }
         }
-      }
-    },
-    orderBy: { name: 'asc' }
+      },
+      orderBy: { name: 'asc' }
+    })
   })
+  
+  // Return empty array if database is not available
+  return result || []
 }
 
 export async function getPipelineReport(pipelineId: string): Promise<PipelineReport | null> {

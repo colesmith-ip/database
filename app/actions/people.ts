@@ -4,6 +4,30 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '../lib/prisma'
 
+// Helper function to safely execute database queries
+async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn()
+  } catch (error) {
+    console.error('Database query error:', error)
+    
+    // During build time, database connection might not be available
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
+      console.warn('Database connection not available during build, returning null')
+      return null
+    }
+    
+    // In production runtime, return null instead of throwing to prevent crashes
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('Database connection failed in production, returning null')
+      return null
+    }
+    
+    // In development, throw the error for debugging
+    throw new Error(`Failed to execute database query: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
 export type PersonFilters = {
   search?: string
   tag?: string
@@ -15,79 +39,97 @@ export async function getPeople(
   limit: number = 10,
   filters: PersonFilters = {}
 ) {
-  const skip = (page - 1) * limit
-  
-  const where = {
-    AND: [
-      filters.search ? {
-        OR: [
-          { name: { contains: filters.search, mode: 'insensitive' as const } },
-          { email: { contains: filters.search, mode: 'insensitive' as const } },
-          { phone: { contains: filters.search, mode: 'insensitive' as const } },
-        ]
-      } : {},
-      // TODO: Fix tags filter for JSON array
-      // filters.tag ? {
-      //   tags: {
-      //     path: ['$'],
-      //     array_contains: filters.tag
-      //   }
-      // } : {},
-      filters.ownerUserId ? {
-        ownerUserId: filters.ownerUserId
-      } : {},
-    ]
-  }
+  const result = await safeDbQuery(async () => {
+    const skip = (page - 1) * limit
+    
+    const where = {
+      AND: [
+        filters.search ? {
+          OR: [
+            { name: { contains: filters.search, mode: 'insensitive' as const } },
+            { email: { contains: filters.search, mode: 'insensitive' as const } },
+            { phone: { contains: filters.search, mode: 'insensitive' as const } },
+          ]
+        } : {},
+        // TODO: Fix tags filter for JSON array
+        // filters.tag ? {
+        //   tags: {
+        //     path: ['$'],
+        //     array_contains: filters.tag
+        //   }
+        // } : {},
+        filters.ownerUserId ? {
+          ownerUserId: filters.ownerUserId
+        } : {},
+      ]
+    }
 
-  const [people, total] = await Promise.all([
-    prisma.person.findMany({
-      where,
-      include: {
-        organizations: {
-          include: {
-            organization: true
+    const [people, total] = await Promise.all([
+      prisma.person.findMany({
+        where,
+        include: {
+          organizations: {
+            include: {
+              organization: true
+            }
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit,
-    }),
-    prisma.person.count({ where }),
-  ])
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.person.count({ where }),
+    ])
 
-  return {
-    people,
+    return {
+      people,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      }
+    }
+  })
+  
+  // Return empty result if database is not available
+  return result || {
+    people: [],
     pagination: {
       page,
       limit,
-      total,
-      pages: Math.ceil(total / limit),
+      total: 0,
+      pages: 0,
     }
   }
 }
 
 export async function getPerson(id: string) {
-  return await prisma.person.findUnique({
-    where: { id },
-    include: {
-      organizations: {
-        include: {
-          organization: true
-        }
-      },
-      fromRelationships: {
-        include: {
-          toPerson: true
-        }
-      },
-      toRelationships: {
-        include: {
-          fromPerson: true
+  const result = await safeDbQuery(async () => {
+    return await prisma.person.findUnique({
+      where: { id },
+      include: {
+        organizations: {
+          include: {
+            organization: true
+          }
+        },
+        fromRelationships: {
+          include: {
+            toPerson: true
+          }
+        },
+        toRelationships: {
+          include: {
+            fromPerson: true
+          }
         }
       }
-    }
+    })
   })
+  
+  // Return null if database is not available
+  return result
 }
 
 export async function createPerson(formData: FormData) {
