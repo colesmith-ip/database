@@ -1,0 +1,288 @@
+// This is your Prisma schema file for local development (SQLite)
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?  @unique
+  phone       String?
+  tags        Json?
+  customFields Json?
+  ownerUserId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organizations     PersonOrganization[]
+  fromRelationships Relationship[] @relation("FromRelationships")
+  toRelationships   Relationship[] @relation("ToRelationships")
+  pipelineItems     PipelineItem[]
+  tasks             Task[]
+
+  @@map("people")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  type      String?
+  region    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  people        PersonOrganization[]
+  pipelineItems PipelineItem[]
+
+  @@map("organizations")
+}
+
+model PersonOrganization {
+  id       String @id @default(cuid())
+  personId String
+  orgId    String
+  role     String?
+
+  // Relations
+  person       Person       @relation(fields: [personId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([personId, orgId])
+  @@map("person_organizations")
+}
+
+model Relationship {
+  id           String   @id @default(cuid())
+  fromPersonId String
+  toPersonId   String
+  type         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  fromPerson Person @relation("FromRelationships", fields: [fromPersonId], references: [id], onDelete: Cascade)
+  toPerson   Person @relation("ToRelationships", fields: [toPersonId], references: [id], onDelete: Cascade)
+
+  @@unique([fromPersonId, toPersonId, type])
+  @@map("relationships")
+}
+
+model Pipeline {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  stages Stage[]
+
+  @@map("pipelines")
+}
+
+model Stage {
+  id         String   @id @default(cuid())
+  pipelineId String
+  name       String
+  order      Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  pipeline     Pipeline       @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  items        PipelineItem[]
+  stageHistory PipelineItemStageHistory[]
+  stageRule    StageRule?
+
+  @@unique([pipelineId, order])
+  @@map("stages")
+}
+
+model PipelineItem {
+  id             String   @id @default(cuid())
+  title          String
+  personId       String?
+  organizationId String?
+  ownerUserId    String?
+  stageId        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  person       Person?       @relation(fields: [personId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  stage        Stage         @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  stageHistory PipelineItemStageHistory[]
+  tasks        Task[]
+
+  @@map("pipeline_items")
+}
+
+model PipelineItemStageHistory {
+  id               String    @id @default(cuid())
+  pipelineItemId   String
+  stageId          String
+  enteredAt        DateTime  @default(now())
+  leftAt           DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  pipelineItem PipelineItem @relation(fields: [pipelineItemId], references: [id], onDelete: Cascade)
+  stage        Stage        @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@map("pipeline_item_stage_history")
+}
+
+model StageRule {
+  id            String   @id @default(cuid())
+  stageId       String
+  templateTitle String
+  offsetDays    Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  stage Stage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@unique([stageId])
+  @@map("stage_rules")
+}
+
+model Task {
+  id             String    @id @default(cuid())
+  title          String
+  ownerUserId    String?
+  dueAt          DateTime?
+  status         String    @default("pending") // pending, completed, deferred
+  personId       String?
+  pipelineItemId String?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  person       Person?       @relation(fields: [personId], references: [id], onDelete: SetNull)
+  pipelineItem PipelineItem? @relation(fields: [pipelineItemId], references: [id], onDelete: SetNull)
+
+  @@map("tasks")
+}
+
+model CustomFieldSection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  entityType  String   // "person" or "organization"
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  customFields CustomField[]
+
+  @@unique([entityType, name])
+  @@map("custom_field_sections")
+}
+
+model CustomField {
+  id          String   @id @default(cuid())
+  sectionId   String
+  name        String
+  label       String
+  type        String   // "text", "email", "phone", "number", "date", "select", "multiselect", "textarea", "url"
+  required    Boolean  @default(false)
+  options     Json?    // For select/multiselect fields
+  defaultValue String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  section CustomFieldSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, name])
+  @@map("custom_fields")
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  content     String
+  authorName  String
+  authorEmail String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  comments Comment[]
+  likes    Like[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String
+  authorName String
+  authorEmail String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Like {
+  id          String   @id @default(cuid())
+  postId      String
+  authorEmail String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, authorEmail])
+  @@map("likes")
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  authorName  String
+  authorEmail String?
+  priority    String   @default("normal") // low, normal, high, urgent
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  eventType   String    @default("meeting") // meeting, training, review, other
+  color       String    @default("blue") // blue, green, purple, orange, red
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("events")
+}
