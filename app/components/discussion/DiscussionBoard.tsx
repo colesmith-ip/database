@@ -1,11 +1,13 @@
 import { getPosts } from '../../actions/discussion'
 import CreatePostForm from './CreatePostForm'
 import PostCard from './PostCard'
+import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
 
 export default async function DiscussionBoard() {
+  noStore()
   const posts = await getPosts()
 
   return (

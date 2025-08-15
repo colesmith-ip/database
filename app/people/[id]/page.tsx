@@ -8,6 +8,7 @@ import { DeletePersonButton } from '../../components/people/DeletePersonButton'
 import { RelationshipsList } from '../../components/relationships/RelationshipsList'
 import { AddRelationshipForm } from '../../components/relationships/AddRelationshipForm'
 import { TasksList } from '../../components/tasks/TasksList'
+import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
@@ -22,6 +23,7 @@ export default async function PersonDetailPage({
 }: {
   params: { id: string }
 }) {
+  noStore()
   const [person, allPeople, relationshipTypes, tasks] = await Promise.all([
     getPerson(params.id),
     getAllPeople(),

@@ -2,11 +2,13 @@ import DiscussionBoard from './components/discussion/DiscussionBoard'
 import AnnouncementsSection from './components/homepage/AnnouncementsSection'
 import EventsSection from './components/homepage/EventsSection'
 import { getAnnouncements, getEvents } from './actions/homepage'
+import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering to prevent build-time database calls
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
+  noStore()
   const [announcements, events] = await Promise.all([
     getAnnouncements(),
     getEvents()
