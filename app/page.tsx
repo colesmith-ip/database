@@ -1,19 +1,12 @@
-import DiscussionBoard from './components/discussion/DiscussionBoard'
-import AnnouncementsSection from './components/homepage/AnnouncementsSection'
-import EventsSection from './components/homepage/EventsSection'
-import { getAnnouncements, getEvents } from './actions/homepage'
+import Link from 'next/link'
 import { unstable_noStore as noStore } from 'next/cache'
 
-// Force dynamic rendering to prevent build-time database calls
+// Force dynamic rendering to prevent build-time issues
 export const dynamic = 'force-dynamic'
 
-export default async function Home() {
+export default function Home() {
   noStore()
-  const [announcements, events] = await Promise.all([
-    getAnnouncements(),
-    getEvents()
-  ])
-
+  
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Title Section */}
@@ -23,67 +16,37 @@ export default async function Home() {
         </div>
       </div>
       
-      {/* Main Content Grid */}
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">🚀 CRM System</h2>
+          <p className="text-gray-600 mb-6">
+            Welcome to your CRM system! The homepage is temporarily simplified for deployment testing.
+          </p>
           
-          {/* Left Column */}
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="/people" className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+              <h3 className="font-medium text-gray-900">👥 People</h3>
+              <p className="text-sm text-gray-600">Manage contacts</p>
+            </Link>
             
-            {/* Announcements Section */}
-            <AnnouncementsSection announcements={announcements} />
-
-            {/* Organization Links Section */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">🔗 Important Links</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <a href="#" className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                  <span className="text-blue-600 mr-3">📊</span>
-                  <div>
-                    <p className="font-medium text-gray-900">Project Dashboard</p>
-                    <p className="text-xs text-gray-600">View all active projects</p>
-                  </div>
-                </a>
-                <a href="#" className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                  <span className="text-green-600 mr-3">📅</span>
-                  <div>
-                    <p className="font-medium text-gray-900">Team Calendar</p>
-                    <p className="text-xs text-gray-600">Schedule & meetings</p>
-                  </div>
-                </a>
-                <a href="#" className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                  <span className="text-purple-600 mr-3">📋</span>
-                  <div>
-                    <p className="font-medium text-gray-900">Resources</p>
-                    <p className="text-xs text-gray-600">Documents & tools</p>
-                  </div>
-                </a>
-                <a href="#" className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                  <span className="text-orange-600 mr-3">👥</span>
-                  <div>
-                    <p className="font-medium text-gray-900">Team Directory</p>
-                    <p className="text-xs text-gray-600">Contact information</p>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-8">
+            <Link href="/organizations" className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+              <h3 className="font-medium text-gray-900">🏢 Organizations</h3>
+              <p className="text-sm text-gray-600">Manage companies</p>
+            </Link>
             
-            {/* Calendar Section */}
-            <EventsSection events={events} />
-
-            {/* Discussion Board Section */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">💬 Team Discussion</h2>
-              <DiscussionBoard />
-            </div>
+            <Link href="/tasks" className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+              <h3 className="font-medium text-gray-900">📋 Tasks</h3>
+              <p className="text-sm text-gray-600">Manage tasks</p>
+            </Link>
+            
+            <Link href="/pipelines" className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+              <h3 className="font-medium text-gray-900">📊 Pipelines</h3>
+              <p className="text-sm text-gray-600">Manage workflows</p>
+            </Link>
           </div>
         </div>
       </div>
     </main>
-  );
+  )
 }
-// Force fresh deployment
