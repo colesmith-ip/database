@@ -6,7 +6,11 @@ import { unstable_noStore as noStore } from 'next/cache'
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-export default async function GmailIntegrationPage() {
+export default async function GmailIntegrationPage({
+  searchParams,
+}: {
+  searchParams: { success?: string; error?: string }
+}) {
   noStore()
   
   const gmailStatus = await getGmailIntegrationStatus()
@@ -23,6 +27,35 @@ export default async function GmailIntegrationPage() {
         <h1 className="text-3xl font-bold">Gmail Integration</h1>
         <p className="text-gray-600 mt-2">Connect your Gmail account to send email campaigns</p>
       </div>
+
+      {/* Success/Error Messages */}
+      {searchParams.success && (
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-green-800 font-medium">Gmail Integration Successful!</span>
+          </div>
+          <p className="text-green-700 text-sm mt-1">
+            Your Gmail account has been successfully connected. You can now send email campaigns.
+          </p>
+        </div>
+      )}
+
+      {searchParams.error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span className="text-red-800 font-medium">Gmail Integration Failed</span>
+          </div>
+          <p className="text-red-700 text-sm mt-1">
+            {decodeURIComponent(searchParams.error)}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Connection Status */}

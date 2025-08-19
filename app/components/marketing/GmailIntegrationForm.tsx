@@ -8,18 +8,12 @@ export function GmailIntegrationForm() {
   const handleConnectGmail = async () => {
     setIsConnecting(true)
     
-    // This would typically redirect to Google OAuth
-    // For now, we'll simulate the process
     try {
-      // In a real implementation, this would redirect to Google OAuth
-      // window.location.href = '/api/auth/gmail'
-      
-      // For demo purposes, we'll just show a message
-      alert('Gmail integration would redirect to Google OAuth here. In a real implementation, this would connect to the Gmail API.')
+      // Redirect to our OAuth endpoint
+      window.location.href = '/api/auth/gmail'
     } catch (error) {
       console.error('Failed to connect Gmail:', error)
       alert('Failed to connect Gmail account. Please try again.')
-    } finally {
       setIsConnecting(false)
     }
   }
