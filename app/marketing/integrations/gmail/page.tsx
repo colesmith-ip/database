@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getGmailIntegrationStatus } from '../../../actions/marketing'
-import { GmailIntegrationForm } from '../../../../components/marketing/GmailIntegrationForm'
+import { GmailIntegrationForm } from '../../../components/marketing/GmailIntegrationForm'
 import { unstable_noStore as noStore } from 'next/cache'
 
 // Force dynamic rendering
