@@ -27,6 +27,8 @@ model Person {
   toRelationships   Relationship[] @relation("ToRelationships")
   pipelineItems     PipelineItem[]
   tasks             Task[]
+  emailListSubscriptions EmailListSubscriber[]
+  campaignRecipients     EmailCampaignRecipient[]
 
   @@map("people")
 }
@@ -285,4 +287,110 @@ model Event {
   updatedAt   DateTime  @updatedAt
 
   @@map("events")
+}
+
+// Marketing System Models
+model EmailList {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String   @default("manual") // manual, automatic, imported
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  subscribers EmailListSubscriber[]
+  campaigns   EmailCampaign[]
+
+  @@map("email_lists")
+}
+
+model EmailListSubscriber {
+  id         String   @id @default(cuid())
+  emailListId String
+  personId   String
+  status     String   @default("subscribed") // subscribed, unsubscribed, pending
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  emailList EmailList @relation(fields: [emailListId], references: [id], onDelete: Cascade)
+  person    Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([emailListId, personId])
+  @@map("email_list_subscribers")
+}
+
+model EmailCampaign {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  content     String
+  status      String   @default("draft") // draft, scheduled, sending, sent, cancelled
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  emailListId String?
+  senderEmail String
+  senderName  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  emailList EmailList? @relation(fields: [emailListId], references: [id], onDelete: SetNull)
+  recipients EmailCampaignRecipient[]
+
+  @@map("email_campaigns")
+}
+
+model EmailCampaignRecipient {
+  id           String   @id @default(cuid())
+  campaignId   String
+  personId     String
+  email        String
+  status       String   @default("pending") // pending, sent, delivered, opened, clicked, bounced, unsubscribed
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  bouncedAt    DateTime?
+  bounceReason String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  person   Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, personId])
+  @@map("email_campaign_recipients")
+}
+
+model GmailIntegration {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  email        String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("gmail_integrations")
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  content     String
+  category    String   @default("general") // general, newsletter, prayer, support, event
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("email_templates")
 }
