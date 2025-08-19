@@ -3,9 +3,10 @@ import { createEmailList, updateEmailList } from '../../actions/marketing'
 
 interface EmailListFormProps {
   emailList?: EmailList
+  userRole?: string
 }
 
-export function EmailListForm({ emailList }: EmailListFormProps) {
+export function EmailListForm({ emailList, userRole }: EmailListFormProps) {
   const isEditing = !!emailList
   const action = isEditing 
     ? updateEmailList.bind(null, emailList.id)
@@ -60,6 +61,26 @@ export function EmailListForm({ emailList }: EmailListFormProps) {
           Manual lists are perfect for targeted groups like prayer partners or support teams.
         </p>
       </div>
+
+      {/* Organization-wide option for admins */}
+      {userRole === 'admin' && !isEditing && (
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              name="isOrganizationWide"
+              value="true"
+              className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Make this an organization-wide list
+            </span>
+          </label>
+          <p className="text-xs text-gray-500 mt-1">
+            Organization-wide lists can be used by all missionaries and admins for organization communications.
+          </p>
+        </div>
+      )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
         <h4 className="font-medium text-blue-900 mb-2">💡 List Ideas for Mission Organizations</h4>

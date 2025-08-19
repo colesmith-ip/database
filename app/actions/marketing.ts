@@ -29,18 +29,53 @@ async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
 }
 
 // Email Lists
-export async function getEmailLists() {
+export async function getEmailLists(userId?: string, userRole?: string) {
   const result = await safeDbQuery(async () => {
-    return await prisma.emailList.findMany({
-      include: {
-        _count: {
-          select: {
-            subscribers: true
+    // Admins can see all lists, missionaries can only see their own
+    if (userRole === 'admin') {
+      return await prisma.emailList.findMany({
+        include: {
+          _count: {
+            select: {
+              subscribers: true
+            }
+          },
+          ownerPerson: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+    } else {
+      // Missionaries can only see their own lists and organization-wide lists
+      return await prisma.emailList.findMany({
+        where: {
+          OR: [
+            { ownerUserId: userId },
+            { ownerUserId: null } // Organization-wide lists
+          ]
+        },
+        include: {
+          _count: {
+            select: {
+              subscribers: true
+            }
+          },
+          ownerPerson: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+    }
   })
   
   return result || []
@@ -68,13 +103,19 @@ export async function getEmailList(id: string) {
   return result
 }
 
-export async function createEmailList(formData: FormData) {
+export async function createEmailList(formData: FormData, userId?: string, userRole?: string) {
   const name = formData.get('name') as string
   const description = formData.get('description') as string
   const type = formData.get('type') as string || 'manual'
+  const isOrganizationWide = formData.get('isOrganizationWide') === 'true'
 
   if (!name || name.trim() === '') {
     throw new Error('Email list name is required')
+  }
+
+  // Only admins can create organization-wide lists
+  if (isOrganizationWide && userRole !== 'admin') {
+    throw new Error('Only administrators can create organization-wide email lists')
   }
 
   const result = await safeDbQuery(async () => {
@@ -82,7 +123,9 @@ export async function createEmailList(formData: FormData) {
       data: {
         name: name.trim(),
         description: description?.trim() || null,
-        type
+        type,
+        ownerUserId: isOrganizationWide ? null : userId,
+        ownerPersonId: isOrganizationWide ? null : userId // This will be the person ID
       }
     })
   })
@@ -184,19 +227,55 @@ export async function removeSubscriberFromEmailList(emailListId: string, personI
 }
 
 // Email Campaigns
-export async function getEmailCampaigns() {
+export async function getEmailCampaigns(userId?: string, userRole?: string) {
   const result = await safeDbQuery(async () => {
-    return await prisma.emailCampaign.findMany({
-      include: {
-        emailList: true,
-        _count: {
-          select: {
-            recipients: true
+    // Admins can see all campaigns, missionaries can only see their own
+    if (userRole === 'admin') {
+      return await prisma.emailCampaign.findMany({
+        include: {
+          emailList: true,
+          ownerPerson: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          _count: {
+            select: {
+              recipients: true
+            }
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+    } else {
+      // Missionaries can only see their own campaigns and organization-wide campaigns
+      return await prisma.emailCampaign.findMany({
+        where: {
+          OR: [
+            { ownerUserId: userId },
+            { ownerUserId: null } // Organization-wide campaigns
+          ]
+        },
+        include: {
+          emailList: true,
+          ownerPerson: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          _count: {
+            select: {
+              recipients: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+    }
   })
   
   return result || []
@@ -225,7 +304,7 @@ export async function getEmailCampaign(id: string) {
   return result
 }
 
-export async function createEmailCampaign(formData: FormData) {
+export async function createEmailCampaign(formData: FormData, userId?: string, userRole?: string) {
   const name = formData.get('name') as string
   const subject = formData.get('subject') as string
   const content = formData.get('content') as string
@@ -233,6 +312,7 @@ export async function createEmailCampaign(formData: FormData) {
   const senderEmail = formData.get('senderEmail') as string
   const senderName = formData.get('senderName') as string
   const scheduledAt = formData.get('scheduledAt') as string
+  const isOrganizationWide = formData.get('isOrganizationWide') === 'true'
 
   if (!name || name.trim() === '') {
     throw new Error('Campaign name is required')
@@ -246,6 +326,11 @@ export async function createEmailCampaign(formData: FormData) {
     throw new Error('Email content is required')
   }
 
+  // Only admins can create organization-wide campaigns
+  if (isOrganizationWide && userRole !== 'admin') {
+    throw new Error('Only administrators can create organization-wide email campaigns')
+  }
+
   const result = await safeDbQuery(async () => {
     return await prisma.emailCampaign.create({
       data: {
@@ -256,7 +341,9 @@ export async function createEmailCampaign(formData: FormData) {
         senderEmail: senderEmail.trim(),
         senderName: senderName.trim(),
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
-        status: scheduledAt ? 'scheduled' : 'draft'
+        status: scheduledAt ? 'scheduled' : 'draft',
+        ownerUserId: isOrganizationWide ? null : userId,
+        ownerPersonId: isOrganizationWide ? null : userId // This will be the person ID
       }
     })
   })

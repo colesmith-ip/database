@@ -10,6 +10,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("missionary") // admin, missionary, supporter
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  people Person[]
+
+  @@map("users")
+}
+
 model Person {
   id          String   @id @default(cuid())
   name        String
@@ -29,6 +44,9 @@ model Person {
   tasks             Task[]
   emailListSubscriptions EmailListSubscriber[]
   campaignRecipients     EmailCampaignRecipient[]
+  ownedEmailLists       EmailList[] @relation("OwnedEmailLists")
+  ownedEmailCampaigns   EmailCampaign[] @relation("OwnedEmailCampaigns")
+  ownerUser User? @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
 
   @@map("people")
 }
@@ -296,12 +314,15 @@ model EmailList {
   description String?
   type        String   @default("manual") // manual, automatic, imported
   isActive    Boolean  @default(true)
+  ownerUserId String?  // null = organization-wide, userId = missionary-specific
+  ownerPersonId String? // null = organization-wide, personId = missionary-specific
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   subscribers EmailListSubscriber[]
   campaigns   EmailCampaign[]
+  ownerPerson Person? @relation("OwnedEmailLists", fields: [ownerPersonId], references: [id], onDelete: SetNull)
 
   @@map("email_lists")
 }
@@ -335,12 +356,15 @@ model EmailCampaign {
   emailListId String?
   senderEmail String
   senderName  String
+  ownerUserId String?  // null = organization-wide, userId = missionary-specific
+  ownerPersonId String? // null = organization-wide, personId = missionary-specific
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   emailList EmailList? @relation(fields: [emailListId], references: [id], onDelete: SetNull)
   recipients EmailCampaignRecipient[]
+  ownerPerson Person? @relation("OwnedEmailCampaigns", fields: [ownerPersonId], references: [id], onDelete: SetNull)
 
   @@map("email_campaigns")
 }
