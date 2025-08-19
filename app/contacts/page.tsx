@@ -9,8 +9,11 @@ export const dynamic = 'force-dynamic'
 export default async function ContactsPage() {
   noStore()
   
-  const people = await getPeople()
-  const organizations = await getOrganizations()
+  const peopleData = await getPeople()
+  const organizationsData = await getOrganizations()
+  
+  const people = peopleData.people
+  const organizations = organizationsData.organizations
 
   return (
     <div className="container mx-auto px-4 py-8">
