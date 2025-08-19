@@ -13,6 +13,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
+    "db:seed:conversations": "tsx prisma/seed-email-conversations.ts",
     "db:switch-to-sqlite": "cp prisma/schema.sqlite.prisma prisma/schema.prisma && npm run db:generate",
     "db:switch-to-postgres": "cp prisma/schema.prisma prisma/schema.postgres.prisma && npm run db:generate",
     "test:supabase": "node test-supabase-connection.js"

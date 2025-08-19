@@ -7,6 +7,7 @@ import { useState } from 'react'
 export function Navigation() {
   const pathname = usePathname()
   const [contactsDropdownOpen, setContactsDropdownOpen] = useState(false)
+  const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null)
 
   const navItems = [
     { href: '/', label: 'Dashboard' },
@@ -55,8 +56,17 @@ export function Navigation() {
               {/* Contacts Dropdown */}
               <div className="relative">
                 <button
-                  onMouseEnter={() => setContactsDropdownOpen(true)}
-                  onMouseLeave={() => setContactsDropdownOpen(false)}
+                  onMouseEnter={() => {
+                    if (dropdownTimeout) {
+                      clearTimeout(dropdownTimeout)
+                      setDropdownTimeout(null)
+                    }
+                    setContactsDropdownOpen(true)
+                  }}
+                  onMouseLeave={() => {
+                    const timeout = setTimeout(() => setContactsDropdownOpen(false), 150)
+                    setDropdownTimeout(timeout)
+                  }}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
                     pathname.startsWith('/people') || pathname.startsWith('/organizations') || pathname.startsWith('/contacts')
                       ? 'bg-blue-100 text-blue-700'
@@ -71,8 +81,17 @@ export function Navigation() {
 
                 {contactsDropdownOpen && (
                   <div
-                    onMouseEnter={() => setContactsDropdownOpen(true)}
-                    onMouseLeave={() => setContactsDropdownOpen(false)}
+                    onMouseEnter={() => {
+                      if (dropdownTimeout) {
+                        clearTimeout(dropdownTimeout)
+                        setDropdownTimeout(null)
+                      }
+                      setContactsDropdownOpen(true)
+                    }}
+                    onMouseLeave={() => {
+                      const timeout = setTimeout(() => setContactsDropdownOpen(false), 150)
+                      setDropdownTimeout(timeout)
+                    }}
                     className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
                   >
                     {contactsItems.map((item) => {
