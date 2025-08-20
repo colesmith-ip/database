@@ -106,7 +106,6 @@ export async function getEmailList(id: string) {
 export async function createEmailList(formData: FormData, userId?: string, userRole?: string) {
   const name = formData.get('name') as string
   const description = formData.get('description') as string
-  const type = formData.get('type') as string || 'manual'
   const isOrganizationWide = formData.get('isOrganizationWide') === 'true'
 
   if (!name || name.trim() === '') {
@@ -123,7 +122,7 @@ export async function createEmailList(formData: FormData, userId?: string, userR
       data: {
         name: name.trim(),
         description: description?.trim() || null,
-        type,
+        isOrganizationWide,
         ownerUserId: isOrganizationWide ? null : userId,
         ownerPersonId: isOrganizationWide ? null : userId // This will be the person ID
       }
@@ -142,7 +141,6 @@ export async function createEmailList(formData: FormData, userId?: string, userR
 export async function updateEmailList(id: string, formData: FormData) {
   const name = formData.get('name') as string
   const description = formData.get('description') as string
-  const type = formData.get('type') as string
 
   if (!name || name.trim() === '') {
     throw new Error('Email list name is required')
@@ -153,8 +151,7 @@ export async function updateEmailList(id: string, formData: FormData) {
       where: { id },
       data: {
         name: name.trim(),
-        description: description?.trim() || null,
-        type
+        description: description?.trim() || null
       }
     })
   })
@@ -190,8 +187,7 @@ export async function addSubscriberToEmailList(emailListId: string, personId: st
     return await prisma.emailListSubscriber.create({
       data: {
         emailListId,
-        personId,
-        status: 'subscribed'
+        personId
       }
     })
   })
