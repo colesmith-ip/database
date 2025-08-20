@@ -42,7 +42,7 @@ export async function getEmailConversations(personId: string) {
           }
         }
       },
-      orderBy: { lastActivityAt: 'desc' }
+      orderBy: { lastMessageAt: 'desc' }
     })
   })
   
@@ -90,22 +90,18 @@ export async function sendEmailReply(conversationId: string, formData: FormData)
         conversationId,
         messageId: `reply-${Date.now()}`, // Generate a unique message ID
         fromEmail: 'your-email@yourmission.org', // This should come from the user's Gmail integration
-        fromName: 'Your Name', // This should come from the user's profile
         toEmail: conversation.person.email || '',
         subject: subject || conversation.subject,
-        body: content.trim(),
-        direction: 'outbound'
+        content: content.trim(),
+        isInbound: false
       }
     })
 
-    // Update conversation last activity
+    // Update conversation last message time
     await prisma.emailConversation.update({
       where: { id: conversationId },
       data: { 
-        lastActivityAt: new Date(),
-        messageCount: {
-          increment: 1
-        }
+        lastMessageAt: new Date()
       }
     })
 
