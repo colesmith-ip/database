@@ -53,8 +53,7 @@ async function main() {
         supportLevel: 85,
         yearsOfService: 8,
         language: 'Swahili, English'
-      },
-      ownerUserId: 'user_1',
+      }
     },
   })
 
@@ -70,8 +69,7 @@ async function main() {
         supportLevel: 92,
         yearsOfService: 5,
         specialty: 'Pediatric Care'
-      },
-      ownerUserId: 'user_1',
+      }
     },
   })
 
@@ -87,8 +85,7 @@ async function main() {
         supportLevel: 78,
         yearsOfService: 3,
         focus: 'Bible Training'
-      },
-      ownerUserId: 'user_2',
+      }
     },
   })
 
@@ -103,8 +100,7 @@ async function main() {
         monthlySupport: 150,
         prayerFocus: 'Unreached People Groups',
         commitmentLevel: 'High'
-      },
-      ownerUserId: 'user_1',
+      }
     },
   })
 
@@ -120,8 +116,7 @@ async function main() {
         supportLevel: 65,
         yearsOfService: 2,
         language: 'Spanish, English'
-      },
-      ownerUserId: 'user_1',
+      }
     },
   })
 
@@ -137,8 +132,7 @@ async function main() {
         supportLevel: 88,
         yearsOfService: 6,
         focus: 'Campus Ministry'
-      },
-      ownerUserId: 'user_2',
+      }
     },
   })
 
