@@ -2,31 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { prisma } from '../lib/prisma'
+import { getPrismaClient, safeDbQuery } from '../lib/db-utils'
 
-// Helper function to safely execute database queries
-async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
-  try {
-    return await queryFn()
-  } catch (error) {
-    console.error('Database query error:', error)
-    
-    // During build time, database connection might not be available
-    if (process.env.NODE_ENV === 'production' && process.env.VERCEL === '1') {
-      console.warn('Database connection not available during build, returning null')
-      return null
-    }
-    
-    // In production runtime, return null instead of throwing to prevent crashes
-    if (process.env.NODE_ENV === 'production') {
-      console.warn('Database connection failed in production, returning null')
-      return null
-    }
-    
-    // In development, throw the error for debugging
-    throw new Error(`Failed to execute database query: ${error instanceof Error ? error.message : 'Unknown error'}`)
-  }
-}
+const prisma = getPrismaClient()
 
 export type PersonFilters = {
   search?: string
@@ -133,37 +111,42 @@ export async function getPerson(id: string) {
 }
 
 export async function createPerson(formData: FormData) {
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string
-  const phone = formData.get('phone') as string
-  const ownerUserId = formData.get('ownerUserId') as string
-  const tagsString = formData.get('tags') as string
-  
-  // Validate required fields
-  if (!name || name.trim() === '') {
-    throw new Error('Person name is required')
-  }
-  
-  const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()).filter(Boolean) : []
+  try {
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const phone = formData.get('phone') as string
+    const ownerUserId = formData.get('ownerUserId') as string
+    const tagsString = formData.get('tags') as string
+    
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      throw new Error('Person name is required')
+    }
+    
+    const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()).filter(Boolean) : []
 
-  const result = await safeDbQuery(async () => {
-    return await prisma.person.create({
-      data: {
-        name: name.trim(),
-        email: email && email.trim() !== '' ? email.trim() : null,
-        phone: phone && phone.trim() !== '' ? phone.trim() : null,
-        ownerUserId: ownerUserId && ownerUserId.trim() !== '' ? ownerUserId.trim() : null,
-        tags: tags.length > 0 ? tags : undefined,
-      },
+    const result = await safeDbQuery(async () => {
+      return await prisma.person.create({
+        data: {
+          name: name.trim(),
+          email: email && email.trim() !== '' ? email.trim() : null,
+          phone: phone && phone.trim() !== '' ? phone.trim() : null,
+          ownerUserId: ownerUserId && ownerUserId.trim() !== '' ? ownerUserId.trim() : null,
+          tags: tags.length > 0 ? tags : undefined,
+        },
+      })
     })
-  })
 
-  if (!result) {
-    throw new Error('Failed to create person: Database connection error')
+    if (!result) {
+      throw new Error('Failed to create person: Database connection error. Please try again.')
+    }
+
+    revalidatePath('/people')
+    redirect('/people')
+  } catch (error) {
+    console.error('Error creating person:', error)
+    throw new Error(error instanceof Error ? error.message : 'Failed to create person')
   }
-
-  revalidatePath('/people')
-  redirect('/people')
 }
 
 export async function updatePerson(id: string, formData: FormData) {

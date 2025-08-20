@@ -1,5 +1,6 @@
 import { Person } from '@prisma/client'
 import { createPerson, updatePerson } from '../../actions/people'
+import { ErrorBoundary } from '../ErrorBoundary'
 
 interface PersonFormProps {
   person?: Person
@@ -12,7 +13,8 @@ export function PersonForm({ person }: PersonFormProps) {
     : createPerson
 
   return (
-    <form action={action} className="space-y-4">
+    <ErrorBoundary>
+      <form action={action} className="space-y-4">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
           Name *
@@ -105,5 +107,6 @@ export function PersonForm({ person }: PersonFormProps) {
         )}
       </div>
     </form>
+    </ErrorBoundary>
   )
 }
