@@ -1,4 +1,4 @@
-// This is your Prisma schema file for local development (SQLite)
+// This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -6,8 +6,24 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("missionary") // "admin" or "missionary"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  ownedEmailLists     EmailList[]
+  ownedEmailCampaigns EmailCampaign[]
+  ownedPeople         Person[]
+
+  @@map("users")
 }
 
 model Person {
@@ -22,11 +38,17 @@ model Person {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  organizations     PersonOrganization[]
-  fromRelationships Relationship[] @relation("FromRelationships")
-  toRelationships   Relationship[] @relation("ToRelationships")
-  pipelineItems     PipelineItem[]
-  tasks             Task[]
+  organizations           PersonOrganization[]
+  fromRelationships       Relationship[] @relation("FromRelationships")
+  toRelationships         Relationship[] @relation("ToRelationships")
+  pipelineItems           PipelineItem[]
+  tasks                   Task[]
+  emailListSubscriptions  EmailListSubscriber[]
+  campaignRecipients      EmailCampaignRecipient[]
+  ownedEmailLists         EmailList[]
+  ownedEmailCampaigns     EmailCampaign[]
+  emailConversations      EmailConversation[]
+  ownerUser               User? @relation(fields: [ownerUserId], references: [id])
 
   @@map("people")
 }
@@ -285,4 +307,139 @@ model Event {
   updatedAt   DateTime  @updatedAt
 
   @@map("events")
+}
+
+// Marketing Models
+model EmailList {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  isOrganizationWide Boolean @default(false)
+  ownerUserId       String?
+  ownerPersonId     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  subscribers EmailListSubscriber[]
+  ownerUser   User?   @relation(fields: [ownerUserId], references: [id])
+  ownerPerson Person? @relation(fields: [ownerPersonId], references: [id])
+
+  @@map("email_lists")
+}
+
+model EmailListSubscriber {
+  id         String   @id @default(cuid())
+  emailListId String
+  personId   String
+  subscribedAt DateTime @default(now())
+
+  // Relations
+  emailList EmailList @relation(fields: [emailListId], references: [id], onDelete: Cascade)
+  person    Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([emailListId, personId])
+  @@map("email_list_subscribers")
+}
+
+model EmailCampaign {
+  id                String   @id @default(cuid())
+  name              String
+  subject           String
+  content           String
+  status            String   @default("draft") // draft, sent, scheduled
+  scheduledAt       DateTime?
+  sentAt            DateTime?
+  ownerUserId       String?
+  ownerPersonId     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  recipients EmailCampaignRecipient[]
+  ownerUser  User?   @relation(fields: [ownerUserId], references: [id])
+  ownerPerson Person? @relation(fields: [ownerPersonId], references: [id])
+
+  @@map("email_campaigns")
+}
+
+model EmailCampaignRecipient {
+  id           String   @id @default(cuid())
+  campaignId   String
+  personId     String
+  status       String   @default("pending") // pending, sent, failed, opened, clicked
+  sentAt       DateTime?
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  errorMessage String?
+
+  // Relations
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  person   Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, personId])
+  @@map("email_campaign_recipients")
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  content     String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+model GmailIntegration {
+  id           String   @id @default(cuid())
+  userId       String
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  email        String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId])
+  @@map("gmail_integrations")
+}
+
+// Email Conversation Tracking Models
+model EmailConversation {
+  id          String   @id @default(cuid())
+  personId    String
+  subject     String
+  status      String   @default("open") // open, closed, archived
+  lastMessageAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  person   Person         @relation(fields: [personId], references: [id], onDelete: Cascade)
+  messages EmailMessage[]
+
+  @@map("email_conversations")
+}
+
+model EmailMessage {
+  id                String   @id @default(cuid())
+  conversationId    String
+  fromEmail         String
+  toEmail           String
+  subject           String
+  content           String
+  messageId         String?  // Original email message ID
+  inReplyTo         String?  // Reference to parent message
+  isInbound         Boolean  @default(true) // true = received, false = sent
+  receivedAt        DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  conversation EmailConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("email_messages")
 }
