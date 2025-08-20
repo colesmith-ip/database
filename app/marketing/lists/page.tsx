@@ -36,11 +36,9 @@ export default async function EmailListsPage() {
                     <p className="text-sm text-gray-600 mt-1">{list.description}</p>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    list.type === 'automatic' ? 'bg-green-100 text-green-800' :
-                    list.type === 'imported' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
+                    list.isOrganizationWide ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {list.type}
+                    {list.isOrganizationWide ? 'Organization-wide' : 'Personal'}
                   </span>
                 </div>
                 

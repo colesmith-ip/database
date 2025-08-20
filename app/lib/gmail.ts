@@ -129,15 +129,17 @@ export async function sendEmailCampaign(
         email,
         campaign.subject,
         campaign.content,
-        campaign.senderEmail,
-        campaign.senderName
+        'your-email@yourmission.org', // Default sender email
+        'Your Mission Organization' // Default sender name
       )
 
       // Update recipient status
       await prisma.emailCampaignRecipient.updateMany({
         where: {
           campaignId,
-          email
+          person: {
+            email: email
+          }
         },
         data: {
           status: 'sent',
@@ -153,12 +155,13 @@ export async function sendEmailCampaign(
       await prisma.emailCampaignRecipient.updateMany({
         where: {
           campaignId,
-          email
+          person: {
+            email: email
+          }
         },
         data: {
-          status: 'bounced',
-          bouncedAt: new Date(),
-          bounceReason: error instanceof Error ? error.message : 'Unknown error'
+          status: 'failed',
+          errorMessage: error instanceof Error ? error.message : 'Unknown error'
         }
       })
 

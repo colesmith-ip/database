@@ -45,14 +45,14 @@ export function EmailConversationList({ conversations, personId }: EmailConversa
                 {conversation.status}
               </span>
               <span className="text-xs text-gray-500">
-                {new Date(conversation.lastActivityAt).toLocaleDateString()}
+                {new Date(conversation.lastMessageAt).toLocaleDateString()}
               </span>
             </div>
           </div>
           
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Last activity: {new Date(conversation.lastActivityAt).toLocaleString()}
+              Last activity: {new Date(conversation.lastMessageAt).toLocaleString()}
             </div>
             <div className="flex space-x-2">
               <Link

@@ -45,18 +45,17 @@ export async function POST(request: NextRequest) {
     // Create or find the conversation thread
     let conversation = await prisma.emailConversation.findFirst({
       where: {
-        threadId: threadId || messageId,
-        personId: person.id
+        personId: person.id,
+        subject: subject
       }
     })
 
     if (!conversation) {
       conversation = await prisma.emailConversation.create({
         data: {
-          threadId: threadId || messageId,
           personId: person.id,
           subject: subject,
-          status: 'active'
+          status: 'open'
         }
       })
     }
@@ -67,23 +66,19 @@ export async function POST(request: NextRequest) {
         conversationId: conversation.id,
         messageId: messageId,
         fromEmail: from.email,
-        fromName: from.name,
         toEmail: recipientEmail,
         subject: subject,
-        body: emailBody,
-        direction: 'inbound',
+        content: emailBody,
+        isInbound: true,
         receivedAt: new Date(timestamp || Date.now())
       }
     })
 
-    // Update conversation last activity
+    // Update conversation last message time
     await prisma.emailConversation.update({
       where: { id: conversation.id },
       data: { 
-        lastActivityAt: new Date(),
-        messageCount: {
-          increment: 1
-        }
+        lastMessageAt: new Date()
       }
     })
 

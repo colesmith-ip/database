@@ -178,12 +178,10 @@ Missionary Team`,
       // Create conversation
       const conversation = await prisma.emailConversation.create({
         data: {
-          threadId: `sample-thread-${i + 1}`,
           personId: person.id,
           subject: conversationData.subject,
-          status: 'active',
-          messageCount: conversationData.messages.length,
-          lastActivityAt: conversationData.messages[conversationData.messages.length - 1].receivedAt
+          status: 'open',
+          lastMessageAt: conversationData.messages[conversationData.messages.length - 1].receivedAt
         }
       })
 
@@ -194,11 +192,10 @@ Missionary Team`,
             conversationId: conversation.id,
             messageId: `sample-message-${Date.now()}-${Math.random()}`,
             fromEmail: messageData.fromEmail,
-            fromName: messageData.fromName,
             toEmail: messageData.toEmail,
             subject: messageData.subject,
-            body: messageData.body,
-            direction: messageData.direction,
+            content: messageData.body,
+            isInbound: messageData.direction === 'inbound',
             receivedAt: messageData.receivedAt
           }
         })

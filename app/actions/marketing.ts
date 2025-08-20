@@ -229,7 +229,6 @@ export async function getEmailCampaigns(userId?: string, userRole?: string) {
     if (userRole === 'admin') {
       return await prisma.emailCampaign.findMany({
         include: {
-          emailList: true,
           ownerPerson: {
             select: {
               id: true,
@@ -255,7 +254,6 @@ export async function getEmailCampaigns(userId?: string, userRole?: string) {
           ]
         },
         include: {
-          emailList: true,
           ownerPerson: {
             select: {
               id: true,
@@ -282,7 +280,6 @@ export async function getEmailCampaign(id: string) {
     return await prisma.emailCampaign.findUnique({
       where: { id },
       include: {
-        emailList: true,
         recipients: {
           include: {
             person: true
@@ -333,9 +330,6 @@ export async function createEmailCampaign(formData: FormData, userId?: string, u
         name: name.trim(),
         subject: subject.trim(),
         content: content.trim(),
-        emailListId: emailListId || null,
-        senderEmail: senderEmail.trim(),
-        senderName: senderName.trim(),
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         status: scheduledAt ? 'scheduled' : 'draft',
         ownerUserId: isOrganizationWide ? null : userId,
@@ -373,9 +367,6 @@ export async function updateEmailCampaign(id: string, formData: FormData) {
         name: name.trim(),
         subject: subject?.trim() || '',
         content: content?.trim() || '',
-        emailListId: emailListId || null,
-        senderEmail: senderEmail?.trim() || '',
-        senderName: senderName?.trim() || '',
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null
       }
     })
@@ -436,7 +427,6 @@ export async function createEmailTemplate(formData: FormData) {
   const name = formData.get('name') as string
   const subject = formData.get('subject') as string
   const content = formData.get('content') as string
-  const category = formData.get('category') as string || 'general'
 
   if (!name || name.trim() === '') {
     throw new Error('Template name is required')
@@ -447,8 +437,7 @@ export async function createEmailTemplate(formData: FormData) {
       data: {
         name: name.trim(),
         subject: subject?.trim() || '',
-        content: content?.trim() || '',
-        category
+        content: content?.trim() || ''
       }
     })
   })
@@ -465,9 +454,7 @@ export async function createEmailTemplate(formData: FormData) {
 // Gmail Integration
 export async function getGmailIntegrationStatus() {
   const result = await safeDbQuery(async () => {
-    const integration = await prisma.gmailIntegration.findFirst({
-      where: { isActive: true }
-    })
+    const integration = await prisma.gmailIntegration.findFirst()
     
     return {
       isConnected: !!integration,
@@ -487,16 +474,14 @@ export async function saveGmailIntegration(userId: string, accessToken: string, 
         accessToken,
         refreshToken,
         email,
-        expiresAt,
-        isActive: true
+        expiresAt
       },
       create: {
         userId,
         accessToken,
         refreshToken,
         email,
-        expiresAt,
-        isActive: true
+        expiresAt
       }
     })
   })
