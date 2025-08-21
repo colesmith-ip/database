@@ -3,11 +3,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useAuth } from '@/app/contexts/AuthContext'
 
 export function Navigation() {
   const pathname = usePathname()
   const [contactsDropdownOpen, setContactsDropdownOpen] = useState(false)
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null)
+  const { user, signOut } = useAuth()
+
+  const userRole = user?.user_metadata?.role || 'user'
 
   const navItems = [
     { href: '/', label: 'Dashboard' },
@@ -23,6 +27,11 @@ export function Navigation() {
     { href: '/organizations', label: 'Organizations' },
     { href: '/contacts', label: 'All Contacts' },
   ]
+
+  // Don't show navigation if not logged in
+  if (!user) {
+    return null
+  }
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -68,7 +77,8 @@ export function Navigation() {
                     setDropdownTimeout(timeout)
                   }}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    pathname.startsWith('/people') || pathname.startsWith('/organizations') || pathname.startsWith('/contacts')
+                    pathname.startsWith('/people') || pathname.startsWith('/organizations') ||
+                    pathname.startsWith('/contacts')
                       ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
@@ -116,6 +126,19 @@ export function Navigation() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* User Menu */}
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-600">
+              {user.email} ({userRole})
+            </div>
+            <button
+              onClick={signOut}
+              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </div>

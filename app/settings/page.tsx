@@ -1,9 +1,13 @@
-import Link from 'next/link'
+'use client';
 
-// Force dynamic rendering to prevent build-time issues
-export const dynamic = 'force-dynamic'
+import Link from 'next/link';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { ProtectedRoute } from '@/app/components/ProtectedRoute';
 
-export default function SettingsPage() {
+function SettingsContent() {
+  const { user } = useAuth();
+  const userRole = user?.user_metadata?.role || 'user';
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
@@ -111,24 +115,26 @@ export default function SettingsPage() {
           </div>
         </Link>
 
-        {/* User Management */}
-        <Link
-          href="/settings/users"
-          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-red-600 text-xl">👤</span>
+        {/* User Management - Only for Admins */}
+        {userRole === 'admin' && (
+          <Link
+            href="/settings/users"
+            className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                <span className="text-red-600 text-xl">👤</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">User Management</h3>
+                <p className="text-sm text-gray-600">Manage users, roles, and permissions</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">User Management</h3>
-              <p className="text-sm text-gray-600">Manage users, roles, and permissions</p>
+            <div className="text-red-600 font-medium text-sm">
+              Manage users →
             </div>
-          </div>
-          <div className="text-red-600 font-medium text-sm">
-            Manage users →
-          </div>
-        </Link>
+          </Link>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -162,6 +168,13 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
+export default function SettingsPage() {
+  return (
+    <ProtectedRoute>
+      <SettingsContent />
+    </ProtectedRoute>
+  );
+}

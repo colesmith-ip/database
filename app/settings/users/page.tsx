@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { ProtectedRoute } from '@/app/components/ProtectedRoute';
 
 interface UserProfile {
   id: string;
@@ -12,7 +13,7 @@ interface UserProfile {
   last_sign_in_at?: string;
 }
 
-export default function UserManagementPage() {
+function UserManagementContent() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -448,5 +449,13 @@ export default function UserManagementPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UserManagementPage() {
+  return (
+    <ProtectedRoute requireAdmin={true}>
+      <UserManagementContent />
+    </ProtectedRoute>
   );
 }
