@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
+import { useAuth } from '@/app/contexts/AuthContext';
 import Link from 'next/link';
 
 function ResetPasswordContent() {
@@ -11,18 +12,26 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   useEffect(() => {
     // Check if we have the necessary parameters
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
     
-    if (!accessToken || !refreshToken) {
+    if (accessToken && refreshToken) {
+      // We have reset tokens, show the form
+      setShowForm(true);
+    } else if (user) {
+      // User is logged in but no reset tokens, show form anyway
+      setShowForm(true);
+    } else {
       setError('Invalid or expired reset link. Please request a new password reset.');
     }
-  }, [searchParams]);
+  }, [searchParams, user]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,26 +50,7 @@ function ResetPasswordContent() {
     setError(null);
 
     try {
-      const accessToken = searchParams.get('access_token');
-      const refreshToken = searchParams.get('refresh_token');
-
-      if (!accessToken || !refreshToken) {
-        setError('Invalid or expired reset link');
-        return;
-      }
-
-      // Set the session with the tokens from the reset link
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-
-      if (sessionError) {
-        setError('Invalid or expired reset link. Please request a new password reset.');
-        return;
-      }
-
-      // Update the password
+      // Update the password for the current user
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
@@ -89,10 +79,35 @@ function ResetPasswordContent() {
               Your password has been successfully updated.
             </p>
             <Link
-              href="/login"
+              href="/"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium"
             >
-              Sign In
+              Go to Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!showForm) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Password Reset</h2>
+            {error ? (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                {error}
+              </div>
+            ) : (
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            )}
+            <Link
+              href="/login/forgot-password"
+              className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+            >
+              Request New Reset Link
             </Link>
           </div>
         </div>
@@ -108,7 +123,7 @@ function ResetPasswordContent() {
             Set your new password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your new password below
+            {user ? `Setting password for ${user.email}` : 'Enter your new password below'}
           </p>
         </div>
         
@@ -167,10 +182,10 @@ function ResetPasswordContent() {
 
           <div className="text-center">
             <Link
-              href="/login"
+              href="/"
               className="text-blue-600 hover:text-blue-500 text-sm font-medium"
             >
-              Back to Login
+              Back to Dashboard
             </Link>
           </div>
         </form>
