@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { getAnnouncements, getEvents } from '@/app/actions/homepage';
 import AnnouncementsSection from './homepage/AnnouncementsSection';
 import EventsSection from './homepage/EventsSection';
+import DiscussionBoard from './discussion/DiscussionBoard';
 import Link from 'next/link';
 
 interface Announcement {
@@ -30,42 +31,6 @@ interface Event {
 export function HomeContent() {
   const { user } = useAuth();
   const userRole = user?.user_metadata?.role || 'user';
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const [announcementsData, eventsData] = await Promise.all([
-          getAnnouncements(),
-          getEvents()
-        ]);
-        setAnnouncements(announcementsData);
-        setEvents(eventsData);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="h-64 bg-gray-200 rounded"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -80,10 +45,19 @@ export function HomeContent() {
       {/* Main Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Announcements Section */}
-        <AnnouncementsSection announcements={announcements} />
+        <AnnouncementsSection announcements={[]} />
         
         {/* Events Section */}
-        <EventsSection events={events} />
+        <EventsSection events={[]} />
+      </div>
+
+      {/* Discussion Board Section */}
+      <div className="mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">💬 Discussion Board</h2>
+          <p className="text-gray-600 mb-4">Share prayers, notes, and encouragements with your team.</p>
+          <DiscussionBoard />
+        </div>
       </div>
 
       {/* Quick Actions Grid */}
