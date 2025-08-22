@@ -3,8 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { ProtectedRoute } from '@/app/components/ProtectedRoute';
-import { useAvailablePages } from '@/app/lib/clientPageDetection';
-import { PagePermission } from '@/app/lib/pageDetection';
+
+interface PagePermission {
+  id: string;
+  name: string;
+  path: string;
+  description: string;
+  category: string;
+}
 
 interface Role {
   id: string;
@@ -13,18 +19,35 @@ interface Role {
   permissions: string[];
 }
 
+// Static list of available pages - no server actions needed
+const AVAILABLE_PAGES: PagePermission[] = [
+  { id: 'dashboard', name: 'Dashboard', path: '/', description: 'Main dashboard with announcements and events', category: 'Core' },
+  { id: 'people', name: 'People', path: '/people', description: 'Manage contacts and people', category: 'Contacts' },
+  { id: 'organizations', name: 'Organizations', path: '/organizations', description: 'Manage companies and organizations', category: 'Contacts' },
+  { id: 'contacts', name: 'All Contacts', path: '/contacts', description: 'View all contacts', category: 'Contacts' },
+  { id: 'pipelines', name: 'Pipelines', path: '/pipelines', description: 'Manage sales pipelines and deals', category: 'Mobilization' },
+  { id: 'reports', name: 'Reports', path: '/reports', description: 'View analytics and reports', category: 'Mobilization' },
+  { id: 'marketing', name: 'Communications', path: '/marketing', description: 'Marketing and communications', category: 'Communications' },
+  { id: 'tasks', name: 'Tasks', path: '/tasks', description: 'Manage tasks and to-dos', category: 'Project Management' },
+  { id: 'hr', name: 'Human Resources', path: '/hr', description: 'HR management', category: 'HR' },
+  { id: 'finance', name: 'Finance', path: '/finance', description: 'Financial management', category: 'Finance' },
+  { id: 'settings', name: 'Settings', path: '/settings', description: 'System settings', category: 'System' },
+  { id: 'user-management', name: 'User Management', path: '/settings/users', description: 'Manage users and permissions', category: 'System' },
+  { id: 'role-management', name: 'Role Management', path: '/settings/roles', description: 'Configure role permissions and access control', category: 'System' },
+];
+
 const DEFAULT_ROLES: Role[] = [
   {
     id: 'admin',
     name: 'Admin',
     description: 'Full access to all features',
-    permissions: [] // Will be populated with all available pages
+    permissions: AVAILABLE_PAGES.map(page => page.id)
   },
   {
     id: 'manager',
     name: 'Manager',
     description: 'Access to most features except system settings',
-    permissions: [] // Will be populated dynamically
+    permissions: AVAILABLE_PAGES.filter(page => !['settings', 'user-management', 'role-management'].includes(page.id)).map(page => page.id)
   },
   {
     id: 'user',
@@ -39,30 +62,8 @@ export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>(DEFAULT_ROLES);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const { pages: availablePages, loading: pagesLoading, error: pagesError } = useAvailablePages();
 
   const userRole = user?.user_metadata?.role || 'user';
-
-  useEffect(() => {
-    if (availablePages.length > 0) {
-      // Update roles with all available pages
-      const updatedRoles = roles.map(role => {
-        if (role.id === 'admin') {
-          return { ...role, permissions: availablePages.map(page => page.id) };
-        } else if (role.id === 'manager') {
-          return { 
-            ...role, 
-            permissions: availablePages
-              .filter(page => !['settings', 'user-management', 'roles'].includes(page.id))
-              .map(page => page.id)
-          };
-        }
-        return role;
-      });
-      
-      setRoles(updatedRoles);
-    }
-  }, [availablePages]);
 
   // Only admins can access this page
   if (userRole !== 'admin') {
@@ -116,25 +117,13 @@ export default function RolesPage() {
     setEditingRole(null);
   };
 
-  const groupedPages = availablePages.reduce((groups, page) => {
+  const groupedPages = AVAILABLE_PAGES.reduce((groups, page) => {
     if (!groups[page.category]) {
       groups[page.category] = [];
     }
     groups[page.category].push(page);
     return groups;
   }, {} as Record<string, PagePermission[]>);
-
-  if (pagesLoading) {
-    return (
-      <ProtectedRoute>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
 
   return (
     <ProtectedRoute>
@@ -145,7 +134,7 @@ export default function RolesPage() {
             Manage role permissions and access control for your CRM system.
           </p>
           <p className="text-sm text-blue-600 mt-2">
-            📁 {pagesError ? 'Using fallback pages' : `Automatically detected ${availablePages.length} pages`}
+            📁 {AVAILABLE_PAGES.length} pages available for role configuration
           </p>
         </div>
 
