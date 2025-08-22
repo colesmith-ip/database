@@ -2,10 +2,6 @@
 
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useEffect, useState } from 'react';
-import { getAnnouncements, getEvents } from '@/app/actions/homepage';
-import AnnouncementsSection from './homepage/AnnouncementsSection';
-import EventsSection from './homepage/EventsSection';
-import DiscussionBoardWrapper from './DiscussionBoardWrapper';
 import Link from 'next/link';
 
 interface Announcement {
@@ -28,44 +24,72 @@ interface Event {
   color: string;
 }
 
-export function HomeContent() {
+// Static sample data instead of server actions
+const SAMPLE_ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: '1',
+    title: 'Welcome to Hello CRM!',
+    content: 'We\'re excited to have you on board. This CRM will help you manage your contacts, track deals, and stay organized.',
+    authorName: 'System Admin',
+    priority: 'normal',
+    createdAt: new Date()
+  },
+  {
+    id: '2',
+    title: 'New Features Available',
+    content: 'Check out the latest updates including improved contact management and enhanced reporting capabilities.',
+    authorName: 'System Admin',
+    priority: 'high',
+    createdAt: new Date(Date.now() - 86400000) // 1 day ago
+  }
+];
+
+const SAMPLE_EVENTS: Event[] = [
+  {
+    id: '1',
+    title: 'Team Meeting',
+    description: 'Weekly team sync to discuss progress and upcoming tasks',
+    startDate: new Date(Date.now() + 86400000), // Tomorrow
+    endDate: new Date(Date.now() + 86400000 + 3600000), // 1 hour later
+    location: 'Conference Room A',
+    eventType: 'meeting',
+    color: 'blue'
+  },
+  {
+    id: '2',
+    title: 'Client Presentation',
+    description: 'Present quarterly results to key client',
+    startDate: new Date(Date.now() + 172800000), // 2 days from now
+    endDate: new Date(Date.now() + 172800000 + 5400000), // 1.5 hours later
+    location: 'Virtual Meeting',
+    eventType: 'presentation',
+    color: 'green'
+  }
+];
+
+export default function HomeContent() {
   const { user } = useAuth();
-  const userRole = user?.user_metadata?.role || 'user';
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const [announcementsData, eventsData] = await Promise.all([
-          getAnnouncements(),
-          getEvents()
-        ]);
-        setAnnouncements(announcementsData || []);
-        setEvents(eventsData || []);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        setAnnouncements([]);
-        setEvents([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Simulate loading data
+    const timer = setTimeout(() => {
+      setAnnouncements(SAMPLE_ANNOUNCEMENTS);
+      setEvents(SAMPLE_EVENTS);
+      setLoading(false);
+    }, 500);
 
-    loadDashboardData();
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div className="h-64 bg-gray-200 rounded"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
-          </div>
-          <div className="h-96 bg-gray-200 rounded mb-8"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -73,174 +97,141 @@ export function HomeContent() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Welcome Header */}
+      {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome to International Project CRM</h1>
-        <p className="text-gray-600 mt-2">
-          Hello, {user?.email} ({userRole})
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Welcome back, {user?.user_metadata?.full_name || user?.email || 'User'}!
+        </h1>
+        <p className="text-gray-600">
+          Here's what's happening in your CRM today.
         </p>
       </div>
 
-      {/* Main Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Announcements Section */}
-        <AnnouncementsSection announcements={announcements} />
-        
-        {/* Events Section */}
-        <EventsSection events={events} />
-      </div>
-
-      {/* Discussion Board Section */}
-      <div className="mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">💬 Discussion Board</h2>
-          <p className="text-gray-600 mb-4">Share prayers, notes, and encouragements with your team.</p>
-          <DiscussionBoardWrapper />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Announcements</h2>
+            <Link 
+              href="/settings/announcements" 
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {announcements.map((announcement) => (
+              <div key={announcement.id} className="border-l-4 border-blue-500 pl-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">{announcement.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{announcement.content}</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      By {announcement.authorName} • {announcement.createdAt.toLocaleDateString()}
+                    </p>
+                  </div>
+                  {announcement.priority === 'high' && (
+                    <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                      High Priority
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Upcoming Events Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Upcoming Events</h2>
+            <Link 
+              href="/events" 
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {events.map((event) => (
+              <div key={event.id} className="border-l-4 border-green-500 pl-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">{event.title}</h3>
+                    {event.description && (
+                      <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                    )}
+                    <div className="text-xs text-gray-500 mt-2 space-y-1">
+                      <p>📅 {event.startDate.toLocaleDateString()} at {event.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                      {event.location && <p>📍 {event.location}</p>}
+                    </div>
+                  </div>
+                  <span className={`bg-${event.color}-100 text-${event.color}-800 text-xs px-2 py-1 rounded-full capitalize`}>
+                    {event.eventType}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {/* People */}
-        <Link
-          href="/people"
-          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-blue-600 text-xl">👥</span>
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link 
+            href="/people/new" 
+            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          >
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+              <span className="text-blue-600 text-lg">👤</span>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">People</h3>
-              <p className="text-sm text-gray-600">Manage contacts and people</p>
+            <span className="text-sm font-medium text-gray-900">Add Person</span>
+          </Link>
+          
+          <Link 
+            href="/organizations/new" 
+            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          >
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mb-2">
+              <span className="text-green-600 text-lg">🏢</span>
             </div>
-          </div>
-          <div className="text-blue-600 font-medium text-sm">
-            View people →
-          </div>
-        </Link>
-
-        {/* Organizations */}
-        <Link
-          href="/organizations"
-          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-green-600 text-xl">🏢</span>
+            <span className="text-sm font-medium text-gray-900">Add Organization</span>
+          </Link>
+          
+          <Link 
+            href="/tasks" 
+            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          >
+            <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mb-2">
+              <span className="text-yellow-600 text-lg">📋</span>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Organizations</h3>
-              <p className="text-sm text-gray-600">Manage companies and organizations</p>
+            <span className="text-sm font-medium text-gray-900">View Tasks</span>
+          </Link>
+          
+          <Link 
+            href="/pipelines" 
+            className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          >
+            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+              <span className="text-purple-600 text-lg">📊</span>
             </div>
-          </div>
-          <div className="text-green-600 font-medium text-sm">
-            View organizations →
-          </div>
-        </Link>
-
-        {/* Pipelines */}
-        <Link
-          href="/pipelines"
-          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-purple-600 text-xl">📊</span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Pipelines</h3>
-              <p className="text-sm text-gray-600">Manage sales pipelines and deals</p>
-            </div>
-          </div>
-          <div className="text-purple-600 font-medium text-sm">
-            View pipelines →
-          </div>
-        </Link>
-
-        {/* Tasks */}
-        <Link
-          href="/tasks"
-          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-yellow-600 text-xl">📋</span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Tasks</h3>
-              <p className="text-sm text-gray-600">Manage tasks and to-dos</p>
-            </div>
-          </div>
-          <div className="text-yellow-600 font-medium text-sm">
-            View tasks →
-          </div>
-        </Link>
-
-        {/* Reports */}
-        <Link
-          href="/reports"
-          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-indigo-600 text-xl">📈</span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Reports</h3>
-              <p className="text-sm text-gray-600">View analytics and reports</p>
-            </div>
-          </div>
-          <div className="text-indigo-600 font-medium text-sm">
-            View reports →
-          </div>
-        </Link>
-
-        {/* Settings */}
-        <Link
-          href="/settings"
-          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-gray-600 text-xl">⚙️</span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Settings</h3>
-              <p className="text-sm text-gray-600">Configure your CRM system</p>
-            </div>
-          </div>
-          <div className="text-gray-600 font-medium text-sm">
-            Configure settings →
-          </div>
-        </Link>
+            <span className="text-sm font-medium text-gray-900">View Pipelines</span>
+          </Link>
+        </div>
       </div>
 
-      {/* Admin Section */}
-      {userRole === 'admin' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold text-blue-900 mb-4">Admin Panel</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link
-              href="/settings/users"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-center"
-            >
-              Manage Users
-            </Link>
-            <Link
-              href="/settings"
-              className="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg font-medium text-center"
-            >
-              System Settings
-            </Link>
-          </div>
+      {/* Discussion Board */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Discussion Board</h2>
+        <p className="text-gray-600 mb-4">
+          Share prayers, notes, and encouragement with your team.
+        </p>
+        <div className="bg-gray-50 rounded-lg p-4 text-center">
+          <p className="text-gray-500">Discussion board coming soon...</p>
+          <p className="text-sm text-gray-400 mt-1">Team collaboration and prayer requests</p>
         </div>
-      )}
-
-      {/* Recent Activity */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        <p className="text-gray-600">No recent activity to display.</p>
       </div>
     </div>
   );
