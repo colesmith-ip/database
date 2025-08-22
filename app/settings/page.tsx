@@ -30,8 +30,8 @@ function SettingsContent() {
               <span className="text-blue-600 text-xl">👥</span>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">People Fields</h3>
-              <p className="text-sm text-gray-600">Customize contact data fields</p>
+              <h3 className="font-semibold text-gray-900">People Custom Fields</h3>
+              <p className="text-sm text-gray-600">Manage sections and custom fields for people profiles</p>
             </div>
           </div>
           <div className="text-blue-600 font-medium text-sm">
@@ -49,12 +49,50 @@ function SettingsContent() {
               <span className="text-green-600 text-xl">🏢</span>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Organization Fields</h3>
-              <p className="text-sm text-gray-600">Customize company data fields</p>
+              <h3 className="font-semibold text-gray-900">Organizations Custom Fields</h3>
+              <p className="text-sm text-gray-600">Manage sections and custom fields for organization profiles</p>
             </div>
           </div>
           <div className="text-green-600 font-medium text-sm">
             Configure fields →
+          </div>
+        </Link>
+
+        {/* Pipeline Settings */}
+        <Link
+          href="/settings/pipelines"
+          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+              <span className="text-purple-600 text-xl">📊</span>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Pipeline Settings</h3>
+              <p className="text-sm text-gray-600">Configure pipeline defaults and stage rules</p>
+            </div>
+          </div>
+          <div className="text-purple-600 font-medium text-sm">
+            Manage pipelines →
+          </div>
+        </Link>
+
+        {/* System Settings */}
+        <Link
+          href="/settings/system"
+          className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+              <span className="text-gray-600 text-xl">⚙️</span>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">System Settings</h3>
+              <p className="text-sm text-gray-600">General system configuration and preferences</p>
+            </div>
+          </div>
+          <div className="text-gray-600 font-medium text-sm">
+            Configure system →
           </div>
         </Link>
 
@@ -65,11 +103,11 @@ function SettingsContent() {
         >
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-              <span className="text-orange-600 text-xl">📊</span>
+              <span className="text-orange-600 text-xl">💾</span>
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Data Management</h3>
-              <p className="text-sm text-gray-600">Import, export, and manage data</p>
+              <p className="text-sm text-gray-600">Import, export, and manage your data</p>
             </div>
           </div>
           <div className="text-orange-600 font-medium text-sm">
@@ -122,10 +160,10 @@ function SettingsContent() {
             View Pipelines
           </Link>
           <Link
-            href="/tasks"
+            href="/reports"
             className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border border-gray-300 font-medium"
           >
-            View Tasks
+            View Reports
           </Link>
         </div>
       </div>
