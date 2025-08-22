@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { ProtectedRoute } from '@/app/components/ProtectedRoute';
-import { getAvailablePages } from '@/app/actions/pageDetection';
+import { useAvailablePages } from '@/app/lib/clientPageDetection';
 import { PagePermission } from '@/app/lib/pageDetection';
 
 interface Role {
@@ -39,45 +39,30 @@ export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>(DEFAULT_ROLES);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [availablePages, setAvailablePages] = useState<PagePermission[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { pages: availablePages, loading: pagesLoading, error: pagesError } = useAvailablePages();
 
   const userRole = user?.user_metadata?.role || 'user';
 
   useEffect(() => {
-    const loadPagesAndRoles = async () => {
-      try {
-        setLoading(true);
-        
-        // Get available pages
-        const pages = await getAvailablePages();
-        setAvailablePages(pages);
-        
-        // Update roles with all available pages
-        const updatedRoles = roles.map(role => {
-          if (role.id === 'admin') {
-            return { ...role, permissions: pages.map(page => page.id) };
-          } else if (role.id === 'manager') {
-            return { 
-              ...role, 
-              permissions: pages
-                .filter(page => !['settings', 'user-management', 'roles'].includes(page.id))
-                .map(page => page.id)
-            };
-          }
-          return role;
-        });
-        
-        setRoles(updatedRoles);
-      } catch (error) {
-        console.error('Error loading pages:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPagesAndRoles();
-  }, []);
+    if (availablePages.length > 0) {
+      // Update roles with all available pages
+      const updatedRoles = roles.map(role => {
+        if (role.id === 'admin') {
+          return { ...role, permissions: availablePages.map(page => page.id) };
+        } else if (role.id === 'manager') {
+          return { 
+            ...role, 
+            permissions: availablePages
+              .filter(page => !['settings', 'user-management', 'roles'].includes(page.id))
+              .map(page => page.id)
+          };
+        }
+        return role;
+      });
+      
+      setRoles(updatedRoles);
+    }
+  }, [availablePages]);
 
   // Only admins can access this page
   if (userRole !== 'admin') {
@@ -139,7 +124,7 @@ export default function RolesPage() {
     return groups;
   }, {} as Record<string, PagePermission[]>);
 
-  if (loading) {
+  if (pagesLoading) {
     return (
       <ProtectedRoute>
         <div className="container mx-auto px-4 py-8">
@@ -160,7 +145,7 @@ export default function RolesPage() {
             Manage role permissions and access control for your CRM system.
           </p>
           <p className="text-sm text-blue-600 mt-2">
-            📁 Automatically detected {availablePages.length} pages from your app directory
+            📁 {pagesError ? 'Using fallback pages' : `Automatically detected ${availablePages.length} pages`}
           </p>
         </div>
 
