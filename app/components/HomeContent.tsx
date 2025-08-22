@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { getAnnouncements, getEvents } from '@/app/actions/homepage';
 import AnnouncementsSection from './homepage/AnnouncementsSection';
 import EventsSection from './homepage/EventsSection';
-import DiscussionBoard from './discussion/DiscussionBoard';
+import DiscussionBoardWrapper from './DiscussionBoardWrapper';
 import Link from 'next/link';
 
 interface Announcement {
@@ -56,7 +56,7 @@ export function HomeContent() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">💬 Discussion Board</h2>
           <p className="text-gray-600 mb-4">Share prayers, notes, and encouragements with your team.</p>
-          <DiscussionBoard />
+          <DiscussionBoardWrapper />
         </div>
       </div>
 
