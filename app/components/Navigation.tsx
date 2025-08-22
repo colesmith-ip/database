@@ -8,19 +8,12 @@ import { useAuth } from '@/app/contexts/AuthContext'
 export function Navigation() {
   const pathname = usePathname()
   const [contactsDropdownOpen, setContactsDropdownOpen] = useState(false)
+  const [mobilizationDropdownOpen, setMobilizationDropdownOpen] = useState(false)
+  const [projectManagementDropdownOpen, setProjectManagementDropdownOpen] = useState(false)
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null)
   const { user, signOut } = useAuth()
 
   const userRole = user?.user_metadata?.role || 'user'
-
-  const navItems = [
-    { href: '/', label: 'Dashboard' },
-    { href: '/pipelines', label: 'Pipelines' },
-    { href: '/tasks', label: 'Tasks' },
-    { href: '/marketing', label: 'Marketing' },
-    { href: '/reports', label: 'Reports' },
-    { href: '/settings', label: 'Settings' },
-  ]
 
   const contactsItems = [
     { href: '/people', label: 'People' },
@@ -28,10 +21,84 @@ export function Navigation() {
     { href: '/contacts', label: 'All Contacts' },
   ]
 
+  const mobilizationItems = [
+    { href: '/pipelines', label: 'Pipelines' },
+    { href: '/reports', label: 'Reports' },
+  ]
+
+  const projectManagementItems = [
+    { href: '/tasks', label: 'Tasks' },
+  ]
+
   // Don't show navigation if not logged in
   if (!user) {
     return null
   }
+
+  const handleDropdownMouseEnter = (setter: (value: boolean) => void) => {
+    if (dropdownTimeout) {
+      clearTimeout(dropdownTimeout)
+      setDropdownTimeout(null)
+    }
+    setter(true)
+  }
+
+  const handleDropdownMouseLeave = (setter: (value: boolean) => void) => {
+    const timeout = setTimeout(() => setter(false), 150)
+    setDropdownTimeout(timeout)
+  }
+
+  const renderDropdown = (
+    isOpen: boolean,
+    setIsOpen: (value: boolean) => void,
+    items: Array<{ href: string; label: string }>,
+    label: string,
+    isActive: boolean
+  ) => (
+    <div className="relative">
+      <button
+        onMouseEnter={() => handleDropdownMouseEnter(setIsOpen)}
+        onMouseLeave={() => handleDropdownMouseLeave(setIsOpen)}
+        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+          isActive
+            ? 'bg-blue-100 text-blue-700'
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+        }`}
+      >
+        {label}
+        <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div
+          onMouseEnter={() => handleDropdownMouseEnter(setIsOpen)}
+          onMouseLeave={() => handleDropdownMouseLeave(setIsOpen)}
+          className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+        >
+          {items.map((item) => {
+            const isItemActive = pathname === item.href || 
+              (item.href !== '/contacts' && pathname.startsWith(item.href))
+            
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block px-4 py-2 text-sm transition-colors ${
+                  isItemActive
+                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -43,88 +110,68 @@ export function Navigation() {
             </Link>
             
             <div className="flex space-x-4">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href || 
-                  (item.href !== '/' && pathname.startsWith(item.href))
-                
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                )
-              })}
+              {/* Dashboard */}
+              <Link
+                href="/"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname === '/'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Dashboard
+              </Link>
 
               {/* Contacts Dropdown */}
-              <div className="relative">
-                <button
-                  onMouseEnter={() => {
-                    if (dropdownTimeout) {
-                      clearTimeout(dropdownTimeout)
-                      setDropdownTimeout(null)
-                    }
-                    setContactsDropdownOpen(true)
-                  }}
-                  onMouseLeave={() => {
-                    const timeout = setTimeout(() => setContactsDropdownOpen(false), 150)
-                    setDropdownTimeout(timeout)
-                  }}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    pathname.startsWith('/people') || pathname.startsWith('/organizations') ||
-                    pathname.startsWith('/contacts')
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  Contacts
-                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+              {renderDropdown(
+                contactsDropdownOpen,
+                setContactsDropdownOpen,
+                contactsItems,
+                'Contacts',
+                pathname.startsWith('/people') || pathname.startsWith('/organizations') || pathname.startsWith('/contacts')
+              )}
 
-                {contactsDropdownOpen && (
-                  <div
-                    onMouseEnter={() => {
-                      if (dropdownTimeout) {
-                        clearTimeout(dropdownTimeout)
-                        setDropdownTimeout(null)
-                      }
-                      setContactsDropdownOpen(true)
-                    }}
-                    onMouseLeave={() => {
-                      const timeout = setTimeout(() => setContactsDropdownOpen(false), 150)
-                      setDropdownTimeout(timeout)
-                    }}
-                    className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
-                  >
-                    {contactsItems.map((item) => {
-                      const isActive = pathname === item.href || 
-                        (item.href !== '/contacts' && pathname.startsWith(item.href))
-                      
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`block px-4 py-2 text-sm transition-colors ${
-                            isActive
-                              ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
+              {/* Mobilization Dropdown */}
+              {renderDropdown(
+                mobilizationDropdownOpen,
+                setMobilizationDropdownOpen,
+                mobilizationItems,
+                'Mobilization',
+                pathname.startsWith('/pipelines') || pathname.startsWith('/reports')
+              )}
+
+              {/* Communications (Marketing) */}
+              <Link
+                href="/marketing"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname.startsWith('/marketing')
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Communications
+              </Link>
+
+              {/* Project Management Dropdown */}
+              {renderDropdown(
+                projectManagementDropdownOpen,
+                setProjectManagementDropdownOpen,
+                projectManagementItems,
+                'Project Management',
+                pathname.startsWith('/tasks')
+              )}
+
+              {/* Settings */}
+              <Link
+                href="/settings"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname.startsWith('/settings')
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Settings
+              </Link>
             </div>
           </div>
 
