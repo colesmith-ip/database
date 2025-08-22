@@ -10,7 +10,6 @@ export function Navigation() {
   const [contactsDropdownOpen, setContactsDropdownOpen] = useState(false)
   const [mobilizationDropdownOpen, setMobilizationDropdownOpen] = useState(false)
   const [projectManagementDropdownOpen, setProjectManagementDropdownOpen] = useState(false)
-  const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null)
   const { user, signOut } = useAuth()
 
   const userRole = user?.user_metadata?.role || 'user'
@@ -35,19 +34,6 @@ export function Navigation() {
     return null
   }
 
-  const handleDropdownMouseEnter = (setter: (value: boolean) => void) => {
-    if (dropdownTimeout) {
-      clearTimeout(dropdownTimeout)
-      setDropdownTimeout(null)
-    }
-    setter(true)
-  }
-
-  const handleDropdownMouseLeave = (setter: (value: boolean) => void) => {
-    const timeout = setTimeout(() => setter(false), 150)
-    setDropdownTimeout(timeout)
-  }
-
   const renderDropdown = (
     isOpen: boolean,
     setIsOpen: (value: boolean) => void,
@@ -57,8 +43,8 @@ export function Navigation() {
   ) => (
     <div className="relative">
       <button
-        onMouseEnter={() => handleDropdownMouseEnter(setIsOpen)}
-        onMouseLeave={() => handleDropdownMouseLeave(setIsOpen)}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
           isActive
             ? 'bg-blue-100 text-blue-700'
@@ -73,8 +59,8 @@ export function Navigation() {
 
       {isOpen && (
         <div
-          onMouseEnter={() => handleDropdownMouseEnter(setIsOpen)}
-          onMouseLeave={() => handleDropdownMouseLeave(setIsOpen)}
+          onMouseEnter={() => setIsOpen(true)}
+          onMouseLeave={() => setIsOpen(false)}
           className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
         >
           {items.map((item) => {
