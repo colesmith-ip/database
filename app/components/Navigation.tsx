@@ -45,7 +45,7 @@ export function Navigation() {
       <button
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
-        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+        className={`px-2 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
           isActive
             ? 'bg-blue-100 text-blue-700'
             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -90,16 +90,16 @@ export function Navigation() {
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-8">
-            <Link href="/" className="text-xl font-bold text-gray-900">
+          <div className="flex items-center space-x-2">
+            <Link href="/" className="text-xl font-bold text-gray-900 mr-4">
               International Project
             </Link>
             
-            <div className="flex space-x-4">
+            <div className="flex items-center space-x-1">
               {/* Dashboard */}
               <Link
                 href="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
                   pathname === '/'
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -107,6 +107,9 @@ export function Navigation() {
               >
                 Dashboard
               </Link>
+
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
               {/* Contacts Dropdown */}
               {renderDropdown(
@@ -117,6 +120,9 @@ export function Navigation() {
                 pathname.startsWith('/people') || pathname.startsWith('/organizations') || pathname.startsWith('/contacts')
               )}
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {/* Mobilization Dropdown */}
               {renderDropdown(
                 mobilizationDropdownOpen,
@@ -126,10 +132,13 @@ export function Navigation() {
                 pathname.startsWith('/pipelines') || pathname.startsWith('/reports')
               )}
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {/* Communications (Marketing) */}
               <Link
                 href="/marketing"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
                   pathname.startsWith('/marketing')
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -137,6 +146,9 @@ export function Navigation() {
               >
                 Communications
               </Link>
+
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
               {/* Project Management Dropdown */}
               {renderDropdown(
@@ -147,10 +159,13 @@ export function Navigation() {
                 pathname.startsWith('/tasks')
               )}
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {/* Human Resources */}
               <Link
                 href="/hr"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
                   pathname.startsWith('/hr')
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -159,10 +174,13 @@ export function Navigation() {
                 Human Resources
               </Link>
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {/* Finance */}
               <Link
                 href="/finance"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
                   pathname.startsWith('/finance')
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -171,10 +189,13 @@ export function Navigation() {
                 Finance
               </Link>
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {/* Settings */}
               <Link
                 href="/settings"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
                   pathname.startsWith('/settings')
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
