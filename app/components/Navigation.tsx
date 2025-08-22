@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/app/contexts/AuthContext'
 
 export function Navigation() {
@@ -41,51 +41,67 @@ export function Navigation() {
     items: Array<{ href: string; label: string }>,
     label: string,
     isActive: boolean
-  ) => (
-    <div className="relative">
-      <button
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
-        className={`px-2 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-          isActive
-            ? 'bg-blue-100 text-blue-700'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-        }`}
-      >
-        {label}
-        <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+  ) => {
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-      {isOpen && (
-        <div
-          onMouseEnter={() => setIsOpen(true)}
-          onMouseLeave={() => setIsOpen(false)}
-          className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+    const handleMouseEnter = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      setIsOpen(true)
+    }
+
+    const handleMouseLeave = () => {
+      timeoutRef.current = setTimeout(() => {
+        setIsOpen(false)
+      }, 200) // 200ms delay before closing
+    }
+
+    return (
+      <div 
+        className="relative"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <button
+          className={`px-2 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+            isActive
+              ? 'bg-blue-100 text-blue-700'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+          }`}
         >
-          {items.map((item) => {
-            const isItemActive = pathname === item.href || 
-              (item.href !== '/contacts' && pathname.startsWith(item.href))
-            
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`block px-4 py-2 text-sm transition-colors ${
-                  isItemActive
-                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {item.label}
-              </Link>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
+          {label}
+          <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {isOpen && (
+          <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+            {items.map((item) => {
+              const isItemActive = pathname === item.href || 
+                (item.href !== '/contacts' && pathname.startsWith(item.href))
+              
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`block px-4 py-2 text-sm transition-colors ${
+                    isItemActive
+                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -196,7 +212,9 @@ export function Navigation() {
           <div className="relative">
             <button
               onMouseEnter={() => setSettingsDropdownOpen(true)}
-              onMouseLeave={() => setSettingsDropdownOpen(false)}
+              onMouseLeave={() => {
+                setTimeout(() => setSettingsDropdownOpen(false), 200)
+              }}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
                 pathname.startsWith('/settings')
                   ? 'bg-blue-100 text-blue-700'
@@ -216,7 +234,9 @@ export function Navigation() {
             {settingsDropdownOpen && (
               <div
                 onMouseEnter={() => setSettingsDropdownOpen(true)}
-                onMouseLeave={() => setSettingsDropdownOpen(false)}
+                onMouseLeave={() => {
+                  setTimeout(() => setSettingsDropdownOpen(false), 200)
+                }}
                 className="absolute top-full right-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50"
               >
                 <Link

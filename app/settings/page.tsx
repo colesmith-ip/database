@@ -135,6 +135,27 @@ function SettingsContent() {
             </div>
           </Link>
         )}
+
+        {/* Role Management - Only for Admins */}
+        {userRole === 'admin' && (
+          <Link
+            href="/settings/roles"
+            className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                <span className="text-indigo-600 text-xl">🔐</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Role Management</h3>
+                <p className="text-sm text-gray-600">Configure role permissions and access control</p>
+              </div>
+            </div>
+            <div className="text-indigo-600 font-medium text-sm">
+              Manage roles →
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* Quick Actions */}
