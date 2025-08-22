@@ -161,6 +161,30 @@ export function Navigation() {
                 pathname.startsWith('/tasks')
               )}
 
+              {/* Human Resources */}
+              <Link
+                href="/hr"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname.startsWith('/hr')
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Human Resources
+              </Link>
+
+              {/* Finance */}
+              <Link
+                href="/finance"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  pathname.startsWith('/finance')
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Finance
+              </Link>
+
               {/* Settings */}
               <Link
                 href="/settings"
