@@ -95,23 +95,42 @@ export function HomeContent() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataSource, setDataSource] = useState<string>('');
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
+        console.log('Loading dashboard data...');
         const [announcementsData, eventsData] = await Promise.all([
           getAnnouncements(),
           getEvents()
         ]);
         
+        console.log('Announcements from DB:', announcementsData);
+        console.log('Events from DB:', eventsData);
+        
         // Use database data if available, otherwise use fallback data
-        setAnnouncements(announcementsData && announcementsData.length > 0 ? announcementsData : FALLBACK_ANNOUNCEMENTS);
-        setEvents(eventsData && eventsData.length > 0 ? eventsData : FALLBACK_EVENTS);
+        if (announcementsData && announcementsData.length > 0) {
+          setAnnouncements(announcementsData);
+          setDataSource('Database');
+        } else {
+          setAnnouncements(FALLBACK_ANNOUNCEMENTS);
+          setDataSource('Fallback');
+        }
+        
+        if (eventsData && eventsData.length > 0) {
+          setEvents(eventsData);
+          setDataSource('Database');
+        } else {
+          setEvents(FALLBACK_EVENTS);
+          setDataSource('Fallback');
+        }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         // Use fallback data on error
         setAnnouncements(FALLBACK_ANNOUNCEMENTS);
         setEvents(FALLBACK_EVENTS);
+        setDataSource('Error - Using Fallback');
       } finally {
         setLoading(false);
       }
@@ -141,6 +160,11 @@ export function HomeContent() {
         <p className="text-gray-600">
           Here's what's happening in your CRM today.
         </p>
+        {dataSource && (
+          <p className="text-xs text-gray-500 mt-1">
+            Data source: {dataSource}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
