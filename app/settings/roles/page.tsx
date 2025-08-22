@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { ProtectedRoute } from '@/app/components/ProtectedRoute';
-import { getAvailablePages, PagePermission } from '@/app/lib/pageDetection';
+import { getAvailablePages } from '@/app/actions/pageDetection';
+import { PagePermission } from '@/app/lib/pageDetection';
 
 interface Role {
   id: string;

@@ -1,5 +1,3 @@
-'use server';
-
 import fs from 'fs';
 import path from 'path';
 
@@ -156,7 +154,7 @@ function generatePagePermission(pagePath: string): PagePermission {
   };
 }
 
-export async function getAvailablePages(): Promise<PagePermission[]> {
+export function getAvailablePagesSync(): PagePermission[] {
   try {
     const appDir = path.join(process.cwd(), 'app');
     const pages = scanDirectory(appDir);
@@ -176,32 +174,6 @@ export async function getAvailablePages(): Promise<PagePermission[]> {
   } catch (error) {
     console.error('Error getting available pages:', error);
     // Return fallback pages if scanning fails
-    return [
-      { id: 'dashboard', name: 'Dashboard', path: '/', description: 'Main dashboard', category: 'Core' },
-      { id: 'people', name: 'People', path: '/people', description: 'Manage contacts', category: 'Contacts' },
-      { id: 'organizations', name: 'Organizations', path: '/organizations', description: 'Manage organizations', category: 'Contacts' },
-    ];
-  }
-}
-
-// For development/testing - get pages synchronously
-export function getAvailablePagesSync(): PagePermission[] {
-  try {
-    const appDir = path.join(process.cwd(), 'app');
-    const pages = scanDirectory(appDir);
-    
-    const permissions = pages.map(pagePath => generatePagePermission(pagePath));
-    
-    permissions.sort((a, b) => {
-      if (a.category !== b.category) {
-        return a.category.localeCompare(b.category);
-      }
-      return a.name.localeCompare(b.name);
-    });
-    
-    return permissions;
-  } catch (error) {
-    console.error('Error getting available pages:', error);
     return [
       { id: 'dashboard', name: 'Dashboard', path: '/', description: 'Main dashboard', category: 'Core' },
       { id: 'people', name: 'People', path: '/people', description: 'Manage contacts', category: 'Contacts' },
