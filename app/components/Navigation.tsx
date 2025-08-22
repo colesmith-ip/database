@@ -85,10 +85,10 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Left side - Logo and main nav */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
             {/* Logo */}
-            <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">Hello CRM</span>
+            <Link href="/" className="text-xl font-bold text-gray-900 mr-4">
+              Hello CRM
             </Link>
 
             {/* Main Navigation */}
@@ -104,6 +104,9 @@ export function Navigation() {
                 Dashboard
               </Link>
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {renderDropdown(
                 contactsDropdownOpen,
                 setContactsDropdownOpen,
@@ -112,6 +115,9 @@ export function Navigation() {
                 contactsItems.some(item => isActive(item.href))
               )}
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {renderDropdown(
                 mobilizationDropdownOpen,
                 setMobilizationDropdownOpen,
@@ -119,6 +125,9 @@ export function Navigation() {
                 'Mobilization',
                 mobilizationItems.some(item => isActive(item.href))
               )}
+
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
               <Link
                 href="/marketing"
@@ -131,6 +140,9 @@ export function Navigation() {
                 Communications
               </Link>
 
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
               {renderDropdown(
                 projectManagementDropdownOpen,
                 setProjectManagementDropdownOpen,
@@ -138,6 +150,9 @@ export function Navigation() {
                 'Project Management',
                 projectManagementItems.some(item => isActive(item.href))
               )}
+
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
               <Link
                 href="/hr"
@@ -149,6 +164,9 @@ export function Navigation() {
               >
                 HR
               </Link>
+
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
               <Link
                 href="/finance"
