@@ -275,3 +275,8 @@ Missionary Team`,
     await prisma.$disconnect();
   }
 }
+
+
+export async function GET() {
+  return POST(new NextRequest("http://localhost:3000/api/public-seed", { method: "POST" }));
+}
