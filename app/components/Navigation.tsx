@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/app/contexts/AuthContext'
 
 export function Navigation() {
@@ -10,7 +10,9 @@ export function Navigation() {
   const [contactsDropdownOpen, setContactsDropdownOpen] = useState(false)
   const [mobilizationDropdownOpen, setMobilizationDropdownOpen] = useState(false)
   const [projectManagementDropdownOpen, setProjectManagementDropdownOpen] = useState(false)
+  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false)
   const { user, signOut } = useAuth()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const userRole = user?.user_metadata?.role || 'user'
 
@@ -48,175 +50,180 @@ export function Navigation() {
         className={`px-2 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
           isActive
             ? 'bg-blue-100 text-blue-700'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
         }`}
       >
         {label}
-        <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-
       {isOpen && (
         <div
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
-          className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+          className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1"
         >
-          {items.map((item) => {
-            const isItemActive = pathname === item.href || 
-              (item.href !== '/contacts' && pathname.startsWith(item.href))
-            
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`block px-4 py-2 text-sm transition-colors ${
-                  isItemActive
-                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {item.label}
-              </Link>
-            )
-          })}
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
       )}
     </div>
   )
 
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+
   return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-2">
-            <Link href="/" className="text-xl font-bold text-gray-900 mr-4">
-              International Project
+    <nav className="bg-white shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          {/* Left side - Logo and main nav */}
+          <div className="flex items-center space-x-6">
+            {/* Logo */}
+            <Link href="/" className="flex items-center">
+              <span className="text-xl font-bold text-gray-900">Hello CRM</span>
             </Link>
-            
-            <div className="flex items-center space-x-1">
-              {/* Dashboard */}
+
+            {/* Main Navigation */}
+            <div className="hidden md:flex items-center space-x-1">
               <Link
                 href="/"
-                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === '/'
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/')
                     ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 Dashboard
               </Link>
 
-              {/* Separator */}
-              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-              {/* Contacts Dropdown */}
               {renderDropdown(
                 contactsDropdownOpen,
                 setContactsDropdownOpen,
                 contactsItems,
                 'Contacts',
-                pathname.startsWith('/people') || pathname.startsWith('/organizations') || pathname.startsWith('/contacts')
+                contactsItems.some(item => isActive(item.href))
               )}
 
-              {/* Separator */}
-              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-              {/* Mobilization Dropdown */}
               {renderDropdown(
                 mobilizationDropdownOpen,
                 setMobilizationDropdownOpen,
                 mobilizationItems,
                 'Mobilization',
-                pathname.startsWith('/pipelines') || pathname.startsWith('/reports')
+                mobilizationItems.some(item => isActive(item.href))
               )}
 
-              {/* Separator */}
-              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-              {/* Communications (Marketing) */}
               <Link
                 href="/marketing"
-                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith('/marketing')
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/marketing')
                     ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 Communications
               </Link>
 
-              {/* Separator */}
-              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-              {/* Project Management Dropdown */}
               {renderDropdown(
                 projectManagementDropdownOpen,
                 setProjectManagementDropdownOpen,
                 projectManagementItems,
                 'Project Management',
-                pathname.startsWith('/tasks')
+                projectManagementItems.some(item => isActive(item.href))
               )}
 
-              {/* Separator */}
-              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-              {/* Human Resources */}
               <Link
                 href="/hr"
-                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith('/hr')
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/hr')
                     ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
-                Human Resources
+                HR
               </Link>
 
-              {/* Separator */}
-              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-              {/* Finance */}
               <Link
                 href="/finance"
-                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith('/finance')
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive('/finance')
                     ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 Finance
               </Link>
-
-              {/* Separator */}
-              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
-              {/* Settings */}
-              <Link
-                href="/settings"
-                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith('/settings')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                Settings
-              </Link>
             </div>
           </div>
 
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              {user.email} ({userRole})
+          {/* Right side - Settings dropdown */}
+          <div className="flex items-center">
+            <div className="relative">
+              <button
+                onMouseEnter={() => {
+                  if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current)
+                    timeoutRef.current = null
+                  }
+                  setSettingsDropdownOpen(true)
+                }}
+                onMouseLeave={() => {
+                  timeoutRef.current = setTimeout(() => setSettingsDropdownOpen(false), 200)
+                }}
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center"
+              >
+                Settings
+                <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {settingsDropdownOpen && (
+                <div
+                  onMouseEnter={() => {
+                    if (timeoutRef.current) {
+                      clearTimeout(timeoutRef.current)
+                      timeoutRef.current = null
+                    }
+                    setSettingsDropdownOpen(true)
+                  }}
+                  onMouseLeave={() => {
+                    timeoutRef.current = setTimeout(() => setSettingsDropdownOpen(false), 200)
+                  }}
+                  className="absolute right-0 z-50 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1"
+                >
+                  <Link
+                    href="/settings"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  >
+                    General
+                  </Link>
+                  
+                  <div className="border-t border-gray-200 my-1"></div>
+                  
+                  <button
+                    onClick={signOut}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  >
+                    Sign Out
+                  </button>
+                  
+                  <div className="border-t border-gray-200 my-1"></div>
+                  
+                  <div className="px-4 py-2 text-xs text-gray-500">
+                    <div>{user.email}</div>
+                    <div className="capitalize">{userRole}</div>
+                  </div>
+                </div>
+              )}
             </div>
-            <button
-              onClick={signOut}
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Sign Out
-            </button>
           </div>
         </div>
       </div>
